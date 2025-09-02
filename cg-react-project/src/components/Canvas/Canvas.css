@@ -1,0 +1,9 @@
+.main-canvas {
+  border: 1px solid #ccc;
+  background-color: #f8f9fa; /* Um fundo levemente cinza como o do GeoGebra */
+  cursor: grab;
+}
+
+.main-canvas:active {
+    cursor: grabbing;
+}
