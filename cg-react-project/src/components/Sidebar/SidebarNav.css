@@ -1,0 +1,47 @@
+.sidebar-nav {
+  /* Define uma largura fixa para a barra de navegação vertical */
+  width: 90px; 
+  flex-shrink: 0;
+
+  /* Organiza os botões em uma coluna */
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+
+  /* Adiciona uma borda à direita para separar do conteúdo */
+  border-right: 1px solid #ddd; 
+  padding: 12px 0;
+}
+
+.nav-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  /* O botão ocupará a largura disponível, com algum espaçamento */
+  width: 90%;
+  padding: 10px 5px;
+  margin-bottom: 8px; /* Espaço entre os botões */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px; 
+  color: #5f6368;
+  font-size: 12px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: #f1f3f4;
+}
+
+.nav-button.active {
+  color: #6557d2;
+  background-color: #e8e6ff; /* Adiciona um fundo sutil para o item ativo */
+}
+
+.nav-button.active span {
+  font-weight: bold;
+}

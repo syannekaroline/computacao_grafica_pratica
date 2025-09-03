@@ -1,60 +1,27 @@
-/* src/App.css */
-
-/* Reseta margens e paddings padrão para um layout mais previsível */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background-color: #f0f0f0;
-}
-
+/* Garante que o container principal ocupe toda a altura da janela */
 .app-container {
   display: flex;
-  flex-direction: column; /* Organiza TopMenu acima do resto */
-  height: 100vh; /* Ocupa a altura inteira da tela */
-  width: 100vw;  /* Ocupa a largura inteira da tela */
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden; /* Evita barras de rolagem no nível do app */
 }
 
+/* O container que segura a sidebar e o canvas */
 .main-content {
   display: flex;
-  flex-grow: 1; /* Faz esta área ocupar todo o espaço vertical restante */
-  overflow: hidden; /* Evita barras de rolagem indesejadas */
+  flex-direction: row; /* Coloca os filhos lado a lado */
+  flex-grow: 1; /* Faz este container ocupar o espaço vertical restante */
+  height: 100%;
 }
+
+/* O divisor que o usuário arrasta */
 .resizer {
   width: 5px;
-  cursor: ew-resize; /* Cursor de redimensionamento horizontal */
+  cursor: col-resize; /* Muda o cursor para indicar que é redimensionável */
   background-color: #e0e0e0;
-  flex-shrink: 0;
-  transition: background-color 0.2s ease;
+  flex-shrink: 0; /* Impede que o divisor seja espremido */
 }
 
 .resizer:hover {
-  background-color: #6557d2; /* Cor roxa ao passar o mouse */
-}
-/* Estilos básicos para os componentes (apenas para visualização inicial) */
-/* Você vai criar arquivos CSS específicos para cada um depois */
-
-/* Sidebar (será src/components/Sidebar/Sidebar.jsx) */
-.sidebar-container { /* Adicione esta classe ao container principal no seu componente Sidebar */
-  width: 280px;
-  padding: 16px;
-  background-color: #ffffff;
-  overflow-y: auto; /* Adiciona barra de rolagem se o conteúdo for grande */
-}
-
-/* TopMenu (será src/components/TopMenu/TopMenu.jsx) */
-.top-menu-container { /* Adicione esta classe ao container principal no seu componente TopMenu */
-  padding: 8px 16px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e0e0e0;
-  flex-shrink: 0; /* Impede que o menu encolha */
-}
-
-/* Canvas (o Canvas já tem a classe .main-canvas) */
-.main-canvas {
-  flex-grow: 1; /* Faz o canvas ocupar todo o espaço horizontal restante */
-  height: 100%;
+  background-color: #c0c0c0;
 }

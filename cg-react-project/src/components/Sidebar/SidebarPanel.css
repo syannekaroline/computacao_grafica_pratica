@@ -1,0 +1,15 @@
+.sidebar-panel {
+  /* Garante que o painel ocupe o espaço restante na sidebar */
+  flex-grow: 1; 
+
+  /* Usa flexbox para organizar o conteúdo interno */
+  display: flex;
+  flex-direction: column;
+
+  padding: 15px;
+  overflow-y: auto; /* Adiciona scroll vertical se o conteúdo for muito alto */
+  overflow-x: hidden; /* Esconde o scroll horizontal desnecessário */
+
+  /* Essencial para o cálculo correto da largura dos filhos */
+  min-width: 0; 
+}
