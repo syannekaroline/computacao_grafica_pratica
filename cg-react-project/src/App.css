@@ -25,3 +25,10 @@
 .resizer:hover {
   background-color: #c0c0c0;
 }
+
+
+.canvas-container {
+  flex-grow: 1; /* A regra mais importante: faz o container crescer */
+  height: 100%;
+  position: relative; /* Ajuda a posicionar o canvas corretamente */
+}

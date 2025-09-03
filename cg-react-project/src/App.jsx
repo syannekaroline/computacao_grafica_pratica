@@ -89,29 +89,42 @@ function App() {
   };
 
   // --- ESTRUTURA VISUAL / LAYOUT ---
-  return (
-    <div className="app-container">
-      <TopMenu currentMode={currentMode} onModeChange={setCurrentMode} />
-      <div className="main-content">
-        <div style={{ width: `${sidebarWidth}px`, flexShrink: 0, backgroundColor: '#fff' }}>
-          <Sidebar
-            activeMenu={activeSidebarMenu}
-            onMenuChange={setActiveSidebarMenu}
-            currentMode={currentMode}
-            parameters={parameters}
-            onParameterChange={handleParameterChange}
-            onModeChange={setCurrentMode}
-            points={points}
-            onPointChange={handlePointChange}
-            onAddPoint={handleAddPoint}
-            onRemovePoint={handleRemovePoint}
-          />
+    return (
+        <div className="app-container">
+            <TopMenu
+                currentMode={currentMode}
+                onModeChange={setCurrentMode}
+            />
+            <div className="main-content">
+                <div style={{ width: `${sidebarWidth}px`, flexShrink: 0, backgroundColor: '#fff' }}>
+                    <Sidebar
+                        activeMenu={activeSidebarMenu}
+                        onMenuChange={setActiveSidebarMenu}
+                        currentMode={currentMode}
+                        parameters={parameters}
+                        onParameterChange={handleParameterChange}
+                        onModeChange={setCurrentMode}
+                        points={points}
+                        onPointChange={handlePointChange}
+                        onAddPoint={handleAddPoint}
+                        onRemovePoint={handleRemovePoint}
+                    />
+                </div>
+                <div
+                    className="resizer"
+                    onMouseDown={handleMouseDown}
+                />
+                {/* Adicionamos um container para o Canvas */}
+                <div className="canvas-container">
+                    <Canvas
+                        currentMode={currentMode}
+                        parameters={parameters}
+                        points={points}
+                    />
+                </div>
+            </div>
         </div>
-        <div className="resizer" onMouseDown={handleMouseDown} />
-        <Canvas currentMode={currentMode} parameters={parameters} points={points} />
-      </div>
-    </div>
-  );
+    );
 }
 
 export default App;
