@@ -1,0 +1,60 @@
+.top-menu-container {
+  width: 100%;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+
+  /* O gradiente mágico com as cores de vocês! */
+  background: linear-gradient(90deg, #4a00e0, #8e2de2);
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.menu-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.menu-title h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.menu-title span {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.tool-group,
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tool-button {
+  background-color: transparent;
+  border: none;
+  color: white;
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.tool-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.tool-button.active {
+  background-color: rgba(255, 255, 255, 0.3);
+}

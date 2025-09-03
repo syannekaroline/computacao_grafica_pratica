@@ -99,7 +99,7 @@ function Canvas({ points }) {
     context.restore();
 
     // --- CÓDIGO DE DESENHO DOS PONTOS ---
-    context.fillStyle = '#FF0000';
+    context.fillStyle = '#5d1cc5ff';
     const pointSize = 8 / zoom;
     points.forEach(point => {
       context.beginPath();
