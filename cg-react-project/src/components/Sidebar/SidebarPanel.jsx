@@ -1,38 +1,46 @@
 import React from 'react';
 import './SidebarPanel.css';
 import TableView from '../TableView/TableView';
+import AlgorithmView from '../AlgorithmView/AlgorithmView';
+import BresenhamPanel from '../ParameterPanels/Bresenham/BresenhamPanel';
 
 function SidebarPanel(props) {
   const {
     activeMenu,
-    points,
-    onPointChange,
-    onAddPoint,
-    onRemovePoint,
-    // Futuramente, outros parâmetros serão passados aqui
+    selectedAlgorithm,
+    onSelectAlgorithm,
+    parameters,
+    onParameterChange,
+    ...tableViewProps
   } = props;
 
   return (
     <div className="sidebar-panel">
       {activeMenu === 'ALGORITHMS' && (
-        <div>
-          <h3>Algoritmos de Rasterização</h3>
-          <p>Lista de algoritmos (Bresenham, Círculo, etc.) aparecerá aqui.</p>
-        </div>
+        <>
+          {/* Parte 1: Lista de Algoritmos */}
+          <AlgorithmView
+            selectedAlgorithm={selectedAlgorithm}
+            onSelectAlgorithm={onSelectAlgorithm}
+          />
+          
+          <div className="parameter-area">
+            {selectedAlgorithm === 'bresenham' && (
+              <BresenhamPanel
+                parameters={parameters.bresenham}
+                onParameterChange={onParameterChange}
+              />
+            )}
+          </div>
+        </>
       )}
+
       {activeMenu === 'TRANSFORMS' && (
-        <div>
-          <h3>Transformações Geométricas</h3>
-          <p>Lista de transformações (Translação, Rotação, etc.) aparecerá aqui.</p>
-        </div>
+        <div>...</div>
       )}
+
       {activeMenu === 'TABLE' && (
-        <TableView
-          points={points}
-          onPointChange={onPointChange}
-          onAddPoint={onAddPoint}
-          onRemovePoint={onRemovePoint}
-        />
+        <TableView {...tableViewProps} />
       )}
     </div>
   );

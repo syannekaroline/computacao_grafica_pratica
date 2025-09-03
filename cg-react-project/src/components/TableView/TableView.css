@@ -21,6 +21,7 @@
 .points-table th {
   background-color: #f2f2f2;
   font-weight: bold;
+  color: #5d1cc5;
 }
 
 /* Permitimos que as colunas de input cresçam para preencher o espaço */
@@ -59,14 +60,23 @@
 }
 
 .remove-button {
-  background-color: #f44336;
+  background-color: rgb(131,38,226);
   color: white;
   width: 100%; 
   box-sizing: border-box;
 }
 
 .add-button {
-  background-color: #4caf50;
+  background-color: rgb(75,0,224);
   color: white;
   align-self: flex-start; 
+}
+
+.table-view-container h3 {
+  font-size: 16px;
+  color: #333; /* Define a cor do texto para cinza escuro */
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee; /* Adiciona a linha divisória */
 }
