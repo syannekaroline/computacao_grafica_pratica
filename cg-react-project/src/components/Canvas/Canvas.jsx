@@ -50,7 +50,7 @@ function Canvas({ points }) {
       bottom: -panOffset.y - (canvas.height / 2) / zoom,
     };
     
-    // --- CÓDIGO DE DESENHO DA GRADE E EIXOS (RESTAURADO) ---
+    // --- CÓDIGO DE DESENHO DA GRADE E EIXOS ---
     const gridSize = 1;
     context.lineWidth = 1 / zoom;
     context.strokeStyle = '#e0e0e0';
@@ -82,7 +82,7 @@ function Canvas({ points }) {
     context.lineTo(0, view.top);
     context.stroke();
 
-    // --- CÓDIGO DE DESENHO DOS NÚMEROS (RESTAURADO) ---
+    // --- CÓDIGO DE DESENHO DOS NÚMEROS ---
     context.save();
     context.scale(1, -1);
     context.font = `${14 / zoom}px Arial`;
@@ -91,24 +91,25 @@ function Canvas({ points }) {
     context.textBaseline = 'middle';
 
     for (let x = Math.floor(view.left); x < view.right; x += gridSize) {
-      if (x !== 0) context.fillText(x, x, 15 / zoom);
+      if (x !== 0) context.fillText(x, x + 0.5, 15 / zoom);
     }
     for (let y = Math.floor(view.bottom); y < view.top; y += gridSize) {
-      if (y !== 0) context.fillText(y, -15 / zoom, -y);
+      if (y !== 0) context.fillText(y, -15 / zoom, -(y + 0.5));
     }
+
+    // MUDANÇA: Adiciona o número 0 perto da origem
+    context.fillText('0', 0.5, 15 / zoom);
+
     context.restore();
 
     // --- CÓDIGO DE DESENHO DOS PONTOS ---
     context.fillStyle = '#5d1cc5ff';
-    const pointSize = 8 / zoom;
     points.forEach(point => {
-      context.beginPath();
-      context.arc(point.x, point.y, pointSize / 2, 0, 2 * Math.PI);
-      context.fill();
+      context.fillRect(point.x, point.y, 1, 1);
     });
 
     context.restore();
-  }, [zoom, panOffset, points, canvasSize]); // canvasSize agora dispara o redesenho
+  }, [zoom, panOffset, points, canvasSize]);
 
   const handleMouseDown = (e) => {
     setIsPanning(true);

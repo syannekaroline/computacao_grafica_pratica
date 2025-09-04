@@ -12,7 +12,8 @@ function App() {
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizingRef = useRef(false);
 
-  const [points, setPoints] = useState([ { x: 2, y: 3 }, { x: 5, y: -1 }, { x: -4, y: 4 } ]);
+  // --- Seção de Pontos da Tabela ---
+  const [points, setPoints] = useState([]);
     
   // add no commit de add dos parametros do bresenham
    const [parameters, setParameters] = useState({
