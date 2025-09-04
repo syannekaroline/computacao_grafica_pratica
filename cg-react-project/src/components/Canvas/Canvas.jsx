@@ -1,15 +1,19 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './Canvas.css';
+import { calculateBresenhamLine } from '../../algorithms/bresenham';
 
-function Canvas({ points }) {
+function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
   const canvasRef = useRef(null);
-  const containerRef = useRef(null); 
+  const containerRef = useRef(null);
 
   const [zoom, setZoom] = useState(20);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+
+  // Armazena os objetos que estão sendo exibidos (e animados) no canvas.
+  const [displayObjects, setDisplayObjects] = useState([]);
 
   // Efeito para redimensionar o canvas
   useEffect(() => {
@@ -30,7 +34,51 @@ function Canvas({ points }) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Efeito principal para desenhar TUDO
+  // Efeito para animar o desenho de novas retas e para o reset
+  useEffect(() => {
+    // Lógica de RESET: Se a lista principal de objetos for limpa,
+    // limpa também o estado de exibição do canvas.
+    if (drawnObjects.length === 0) {
+      setDisplayObjects([]);
+      return; // Interrompe a execução do efeito aqui.
+    }
+
+    // Identifica novos objetos que precisam ser animados
+    const newObjects = drawnObjects.filter(
+      (dObj) => !displayObjects.some((dispObj) => dispObj.id === dObj.id)
+    );
+
+    if (newObjects.length > 0) {
+      newObjects.forEach((obj) => {
+        if (obj.type === 'bresenham') {
+          const linePoints = calculateBresenhamLine(obj.params.p1, obj.params.p2);
+          const animatedObj = { ...obj, points: [] };
+          
+          // Adiciona o objeto ao estado de display para que a animação comece
+          setDisplayObjects((prev) => [...prev, animatedObj]);
+
+          let i = 0;
+          const intervalId = setInterval(() => {
+            if (i < linePoints.length) {
+              // Atualiza o objeto específico com o próximo ponto da linha
+              setDisplayObjects((prev) =>
+                prev.map((d) =>
+                  d.id === obj.id
+                    ? { ...d, points: linePoints.slice(0, i + 1) }
+                    : d
+                )
+              );
+              i++;
+            } else {
+              clearInterval(intervalId);
+            }
+          }, 100); // Você pode alterar este valor (em ms) para controlar a velocidade
+        }
+      });
+    }
+  }, [drawnObjects]); // Este efeito executa quando `drawnObjects` é atualizado
+
+  // Efeito principal de desenho (renderização)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas.width || !canvas.height) return;
@@ -96,20 +144,35 @@ function Canvas({ points }) {
     for (let y = Math.floor(view.bottom); y < view.top; y += gridSize) {
       if (y !== 0) context.fillText(y, -15 / zoom, -(y + 0.5));
     }
-
-    // MUDANÇA: Adiciona o número 0 perto da origem
     context.fillText('0', 0.5, 15 / zoom);
-
     context.restore();
 
-    // --- CÓDIGO DE DESENHO DOS PONTOS ---
+    // --- CÓDIGO DE DESENHO DOS PONTOS DA TABELA ---
     context.fillStyle = '#5d1cc5ff';
     points.forEach(point => {
       context.fillRect(point.x, point.y, 1, 1);
     });
 
+    // --- CÓDIGO DE DESENHO DOS PONTOS INICIAIS DE BRESENHAM ---
+    if (selectedAlgorithm === 'bresenham' && parameters.bresenham) {
+      const { p1, p2 } = parameters.bresenham;
+      context.fillStyle = '#5d1cc5ff'; 
+      context.fillRect(p1.x, p1.y, 1, 1);
+      context.fillRect(p2.x, p2.y, 1, 1);
+    }
+    
+    // --- DESENHA OS PONTOS DOS OBJETOS EM ANIMAÇÃO ---
+    displayObjects.forEach(obj => {
+      if (obj.type === 'bresenham' && obj.points) {
+        context.fillStyle = obj.color;
+        obj.points.forEach(point => {
+          context.fillRect(point.x, point.y, 1, 1);
+        });
+      }
+    });
+
     context.restore();
-  }, [zoom, panOffset, points, canvasSize]);
+  }, [zoom, panOffset, points, canvasSize, parameters, selectedAlgorithm, displayObjects]);
 
   const handleMouseDown = (e) => {
     setIsPanning(true);

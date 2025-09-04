@@ -26,7 +26,8 @@ const ResetIcon = () => (
 );
 
 
-function TopMenu({ currentMode, onModeChange }) {
+// Receba onReset como propriedade
+function TopMenu({ currentMode, onModeChange, onReset }) {
   return (
     <header className="top-menu-container">
       <div className="menu-title">
@@ -52,8 +53,10 @@ function TopMenu({ currentMode, onModeChange }) {
       </div>
 
       <div className="action-group">
-        <button className="tool-button" title="Resetar Visualização">
+        {/* Adicione o onClick ao botão */}
+        <button className="tool-button" title="Resetar Visualização" onClick={onReset}>
           <ResetIcon />
+          <span>Resetar visualização</span>
         </button>
       </div>
     </header>

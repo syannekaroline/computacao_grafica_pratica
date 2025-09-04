@@ -4,21 +4,24 @@ import TableView from '../TableView/TableView';
 import AlgorithmView from '../AlgorithmView/AlgorithmView';
 import BresenhamPanel from '../ParameterPanels/Bresenham/BresenhamPanel';
 
+// CORREÇÃO: A função agora aceita o objeto 'props' inteiro.
 function SidebarPanel(props) {
+  // CORREÇÃO: Agora desestruturamos 'props' aqui dentro, o que é a forma correta.
   const {
     activeMenu,
     selectedAlgorithm,
     onSelectAlgorithm,
     parameters,
     onParameterChange,
-    ...tableViewProps
+    onDrawAlgorithm, // onDrawAlgorithm agora vem daqui
+    // O resto das props será passado para a TableView
+    ...tableViewProps 
   } = props;
 
   return (
     <div className="sidebar-panel">
       {activeMenu === 'ALGORITHMS' && (
         <>
-          {/* Parte 1: Lista de Algoritmos */}
           <AlgorithmView
             selectedAlgorithm={selectedAlgorithm}
             onSelectAlgorithm={onSelectAlgorithm}
@@ -29,6 +32,7 @@ function SidebarPanel(props) {
               <BresenhamPanel
                 parameters={parameters.bresenham}
                 onParameterChange={onParameterChange}
+                onDrawAlgorithm={onDrawAlgorithm}
               />
             )}
           </div>
@@ -36,7 +40,9 @@ function SidebarPanel(props) {
       )}
 
       {activeMenu === 'TRANSFORMS' && (
-        <div>...</div>
+        <div>
+          <h3>Transformações Geométricas</h3>
+        </div>
       )}
 
       {activeMenu === 'TABLE' && (

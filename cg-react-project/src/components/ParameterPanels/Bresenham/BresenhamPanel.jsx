@@ -1,7 +1,7 @@
 import React from 'react';
 import './BresenhamPanel.css';
 
-function BresenhamPanel({ parameters, onParameterChange }) {
+function BresenhamPanel({ parameters, onParameterChange, onDrawAlgorithm }) {
   // Por enquanto, as funções de 'onChange' apenas chamam a função
   // principal, sem a lógica complexa.
   return (
@@ -14,12 +14,12 @@ function BresenhamPanel({ parameters, onParameterChange }) {
           <input 
             type="number" 
             value={parameters.p1.x}
-            onChange={(e) => onParameterChange('bresenham', 'p1', { ...parameters.p1, x: e.target.value })} 
+            onChange={(e) => onParameterChange('bresenham', 'p1', { ...parameters.p1, x: parseFloat(e.target.value) || 0 })} 
           />
           <input 
             type="number" 
             value={parameters.p1.y}
-            onChange={(e) => onParameterChange('bresenham', 'p1', { ...parameters.p1, y: e.target.value })} 
+            onChange={(e) => onParameterChange('bresenham', 'p1', { ...parameters.p1, y: parseFloat(e.target.value) || 0 })} 
           />
         </div>
       </div>
@@ -30,27 +30,17 @@ function BresenhamPanel({ parameters, onParameterChange }) {
           <input 
             type="number" 
             value={parameters.p2.x}
-            onChange={(e) => onParameterChange('bresenham', 'p2', { ...parameters.p2, x: e.target.value })} 
+            onChange={(e) => onParameterChange('bresenham', 'p2', { ...parameters.p2, x: parseFloat(e.target.value) || 0 })} 
           />
           <input 
             type="number" 
             value={parameters.p2.y}
-            onChange={(e) => onParameterChange('bresenham', 'p2', { ...parameters.p2, y: e.target.value })}
+            onChange={(e) => onParameterChange('bresenham', 'p2', { ...parameters.p2, y: parseFloat(e.target.value) || 0 })}
           />
         </div>
-      </div>
+      </div>  
 
-      <div className="param-group">
-        <label htmlFor="bresenham-color">Cor</label>
-        <input 
-          type="color" 
-          id="bresenham-color"
-          value={parameters.color}
-          onChange={(e) => onParameterChange('bresenham', 'color', e.target.value)}
-        />
-      </div>
-
-      <button className="run-button">Desenhar Reta</button>
+      <button className="run-button" onClick={onDrawAlgorithm}>Desenhar Reta</button>
     </div>
   );
 }
