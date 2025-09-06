@@ -8,29 +8,30 @@ function App() {
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
   const [currentMode, setCurrentMode] = useState('SELECT');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('bresenham');
-  
+
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const isResizingRef = useRef(false);
   const [drawnObjects, setDrawnObjects] = useState([]);
 
   // --- Seção de Pontos da Tabela ---
   const [points, setPoints] = useState([]);
-    
+
   // add no commit de add dos parametros do bresenham
-   const [parameters, setParameters] = useState({
-    bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 }},
-     // Futuramente, outros algoritmos virão aqui
-    });
-    // Por enquanto, esta função não fará nada, mas é necessária para os inputs
-    const handleParameterChange = (algorithm, paramName, value) => {
-      setParameters(prevParams => ({
+  const [parameters, setParameters] = useState({
+    bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 } },
+    circle: { center: { x: 5, y: 5 }, radius: 4 },
+    // Futuramente, outros algoritmos virão aqui
+  });
+  // Por enquanto, esta função não fará nada, mas é necessária para os inputs
+  const handleParameterChange = (algorithm, paramName, value) => {
+    setParameters(prevParams => ({
       ...prevParams,
       [algorithm]: {
-          ...prevParams[algorithm],
-          [paramName]: value,
-        },
-      }));
-    };
+        ...prevParams[algorithm],
+        [paramName]: value,
+      },
+    }));
+  };
 
   // --- NOVA FUNÇÃO DE RESET ---
   const handleReset = () => {
@@ -48,12 +49,20 @@ function App() {
 
   //bresenham
   const handleDrawAlgorithm = () => {
-  if (selectedAlgorithm === 'bresenham') {
-    const newObject = {
+    if (selectedAlgorithm === 'bresenham') {
+      const newObject = {
         id: `bresenham-${Date.now()}`,
         type: 'bresenham',
         params: { ...parameters.bresenham },
-        color: '#5d1cc5', // A cor da reta final será preta
+        color: '#5d1cc5', // 
+      };
+      setDrawnObjects(prevObjects => [...prevObjects, newObject]);
+    } else if (selectedAlgorithm === 'circle') {
+      const newObject = {
+        id: `circle-${Date.now()}`,
+        type: 'circle',
+        params: { ...parameters.circle },
+        color: '#5d1cc5',
       };
       setDrawnObjects(prevObjects => [...prevObjects, newObject]);
     }
@@ -102,11 +111,11 @@ function App() {
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />
         <div className="canvas-container">
-          <Canvas 
-          points={points} 
-          parameters={parameters}
-          selectedAlgorithm={selectedAlgorithm}
-          drawnObjects={drawnObjects}
+          <Canvas
+            points={points}
+            parameters={parameters}
+            selectedAlgorithm={selectedAlgorithm}
+            drawnObjects={drawnObjects}
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import './BresenhamPanel.css';
+import '../ParameterPanels.css';
 
 function BresenhamPanel({ parameters, onParameterChange, onDrawAlgorithm }) {
   // Por enquanto, as funções de 'onChange' apenas chamam a função

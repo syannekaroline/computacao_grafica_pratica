@@ -3,6 +3,7 @@ import './SidebarPanel.css';
 import TableView from '../TableView/TableView';
 import AlgorithmView from '../AlgorithmView/AlgorithmView';
 import BresenhamPanel from '../ParameterPanels/Bresenham/BresenhamPanel';
+import CirclePanel from '../ParameterPanels/Circle/CirclePanel';
 
 // CORREÇÃO: A função agora aceita o objeto 'props' inteiro.
 function SidebarPanel(props) {
@@ -15,7 +16,7 @@ function SidebarPanel(props) {
     onParameterChange,
     onDrawAlgorithm, // onDrawAlgorithm agora vem daqui
     // O resto das props será passado para a TableView
-    ...tableViewProps 
+    ...tableViewProps
   } = props;
 
   return (
@@ -26,11 +27,18 @@ function SidebarPanel(props) {
             selectedAlgorithm={selectedAlgorithm}
             onSelectAlgorithm={onSelectAlgorithm}
           />
-          
+
           <div className="parameter-area">
             {selectedAlgorithm === 'bresenham' && (
               <BresenhamPanel
                 parameters={parameters.bresenham}
+                onParameterChange={onParameterChange}
+                onDrawAlgorithm={onDrawAlgorithm}
+              />
+            )}
+            {selectedAlgorithm === 'circle' && (
+              <CirclePanel
+                parameters={parameters.circle}
                 onParameterChange={onParameterChange}
                 onDrawAlgorithm={onDrawAlgorithm}
               />

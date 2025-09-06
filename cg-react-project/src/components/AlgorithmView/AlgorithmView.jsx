@@ -5,6 +5,7 @@ import './AlgorithmView.css';
 // Isso torna o componente autossuficiente e corrige o erro.
 const algorithms = [
   { id: 'bresenham', name: 'Bresenham' },
+  { id: 'circle', name: 'Círculo' },
   // Outros algoritmos serão adicionados aqui no futuro...
 ];
 
