@@ -5,6 +5,7 @@ const algorithms = [
   { id: 'bresenham', name: 'Bresenham' },
   { id: 'circle', name: 'Círculo' },
   { id: 'bezier', name: 'Curva de Bézier' },
+  { id: 'polyline', name: 'Polilinha/Polígono' },
 ];
 
 function AlgorithmView({ selectedAlgorithm, onSelectAlgorithm }) {

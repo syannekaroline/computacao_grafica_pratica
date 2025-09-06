@@ -57,9 +57,14 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
             const segment = calculateBresenhamLine(curvePoints[i], curvePoints[i + 1]);
             allPoints.push(...segment);
           }
+        } else if (obj.type === 'polyline') {
+            for (let i = 0; i < obj.params.points.length - 1; i++) {
+                const segment = calculateBresenhamLine(obj.params.points[i], obj.params.points[i+1]);
+                allPoints.push(...segment);
+            }
         }
 
-        const animatedObj = { ...obj, points: [] };
+        const animatedObj = { ...obj, pointsToAnimate: allPoints, points: [] }; // Renomeando para evitar conflito
         setDisplayObjects((prev) => [...prev, animatedObj]);
 
         let i = 0;
@@ -147,7 +152,8 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
     context.fillText('0', 0.5, 15 / zoom);
     context.restore();
 
-    context.fillStyle = '#5d1cc5ff';
+    // DESENHA PONTOS DA TABELA (VÉRTICES DA POLILINHA EM TEMPO REAL)
+    context.fillStyle = '#000000'; // Pontos em preto
     points.forEach(point => {
       context.fillRect(point.x, point.y, 1, 1);
     });
@@ -167,17 +173,11 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
 
     if (selectedAlgorithm === 'bezier' && parameters.bezier) {
       const { p0, p1, p2, p3 } = parameters.bezier;
-
-      // P0 (Inicial) - Preto
       context.fillStyle = '#000000';
       context.fillRect(p0.x, p0.y, 1, 1);
-
-      // P1 e P2 (Controle) - Vermelho
-      context.fillStyle = '#FF0000'; // Vermelho
+      context.fillStyle = '#FF0000';
       context.fillRect(p1.x, p1.y, 1, 1);
       context.fillRect(p2.x, p2.y, 1, 1);
-
-      // P3 (Final) - Preto
       context.fillStyle = '#000000';
       context.fillRect(p3.x, p3.y, 1, 1);
     }

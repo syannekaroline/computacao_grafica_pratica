@@ -64,7 +64,7 @@ function App() {
         id: `circle-${Date.now()}`,
         type: 'circle',
         params: { ...parameters.circle },
-        color: '#e22d2d',
+        color: '#5d1cc5',
       };
       setDrawnObjects(prevObjects => [...prevObjects, newObject]);
     } else if (selectedAlgorithm === 'bezier') {
@@ -72,9 +72,21 @@ function App() {
         id: `bezier-${Date.now()}`,
         type: 'bezier',
         params: { ...parameters.bezier },
-        color: '#5d1cc5ff', // Cor fixa definida aqui
+        color: '#5d1cc5',
       };
       setDrawnObjects(prevObjects => [...prevObjects, newObject]);
+    } else if (selectedAlgorithm === 'polyline') {
+        if (points.length < 2) {
+            alert("Para desenhar uma polilinha, adicione pelo menos 2 pontos na Tabela de Pontos.");
+            return;
+        }
+        const newObject = {
+            id: `polyline-${Date.now()}`,
+            type: 'polyline',
+            params: { points: [...points] }, // Usa os pontos da tabela
+            color: '#5d1cc5',
+        };
+        setDrawnObjects(prevObjects => [...prevObjects, newObject]);
     }
   };
 
