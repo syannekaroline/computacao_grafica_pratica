@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import './Canvas.css';
 import { calculateBresenhamLine } from '../../algorithms/bresenham';
 import { calculateCirclePoints } from '../../algorithms/circle';
+import { calculateBezierCurve } from '../../algorithms/bezier';
 
 function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
   const canvasRef = useRef(null);
@@ -13,10 +14,8 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
   const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
-  // Armazena os objetos que estão sendo exibidos (e animados) no canvas.
   const [displayObjects, setDisplayObjects] = useState([]);
 
-  // Efeito para redimensionar o canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     const resizeObserver = new ResizeObserver(entries => {
@@ -35,16 +34,12 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Efeito para animar o desenho de novas retas e para o reset
   useEffect(() => {
-    // Lógica de RESET: Se a lista principal de objetos for limpa,
-    // limpa também o estado de exibição do canvas.
     if (drawnObjects.length === 0) {
       setDisplayObjects([]);
-      return; // Interrompe a execução do efeito aqui.
+      return;
     }
 
-    // Identifica novos objetos que precisam ser animados
     const newObjects = drawnObjects.filter(
       (dObj) => !displayObjects.some((dispObj) => dispObj.id === dObj.id)
     );
@@ -56,17 +51,20 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
           allPoints = calculateBresenhamLine(obj.params.p1, obj.params.p2);
         } else if (obj.type === 'circle') {
           allPoints = calculateCirclePoints(obj.params.center, obj.params.radius);
+        } else if (obj.type === 'bezier') {
+          const curvePoints = calculateBezierCurve(obj.params.p0, obj.params.p1, obj.params.p2, obj.params.p3);
+          for (let i = 0; i < curvePoints.length - 1; i++) {
+            const segment = calculateBresenhamLine(curvePoints[i], curvePoints[i + 1]);
+            allPoints.push(...segment);
+          }
         }
 
         const animatedObj = { ...obj, points: [] };
-
-        // Adiciona o objeto ao estado de display para que a animação comece
         setDisplayObjects((prev) => [...prev, animatedObj]);
 
         let i = 0;
         const intervalId = setInterval(() => {
           if (i < allPoints.length) {
-            // Atualiza o objeto específico com o próximo ponto da linha
             setDisplayObjects((prev) =>
               prev.map((d) =>
                 d.id === obj.id
@@ -78,12 +76,11 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
           } else {
             clearInterval(intervalId);
           }
-        }, 100); // Você pode alterar este valor (em ms) para controlar a velocidade
+        }, 20);
       });
     }
-  }, [drawnObjects]); // Este efeito executa quando `drawnObjects` é atualizado
+  }, [drawnObjects]);
 
-  // Efeito principal de desenho (renderização)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas.width || !canvas.height) return;
@@ -103,7 +100,6 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
       bottom: -panOffset.y - (canvas.height / 2) / zoom,
     };
 
-    // --- CÓDIGO DE DESENHO DA GRADE E EIXOS ---
     const gridSize = 1;
     context.lineWidth = 1 / zoom;
     context.strokeStyle = '#e0e0e0';
@@ -135,7 +131,6 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
     context.lineTo(0, view.top);
     context.stroke();
 
-    // --- CÓDIGO DE DESENHO DOS NÚMEROS ---
     context.save();
     context.scale(1, -1);
     context.font = `${14 / zoom}px Arial`;
@@ -152,28 +147,41 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
     context.fillText('0', 0.5, 15 / zoom);
     context.restore();
 
-    // --- CÓDIGO DE DESENHO DOS PONTOS DA TABELA ---
     context.fillStyle = '#5d1cc5ff';
     points.forEach(point => {
       context.fillRect(point.x, point.y, 1, 1);
     });
 
-    // --- CÓDIGO DE DESENHO DOS PONTOS INICIAIS DE BRESENHAM ---
     if (selectedAlgorithm === 'bresenham' && parameters.bresenham) {
       const { p1, p2 } = parameters.bresenham;
-      context.fillStyle = '#000000'; // Cor preta
+      context.fillStyle = '#000000';
       context.fillRect(p1.x, p1.y, 1, 1);
       context.fillRect(p2.x, p2.y, 1, 1);
     }
 
-    // --- NOVO: CÓDIGO DE DESENHO DO CENTRO DO CÍRCULO EM TEMPO REAL ---
     if (selectedAlgorithm === 'circle' && parameters.circle && parameters.circle.center) {
       const { center } = parameters.circle;
-      context.fillStyle = '#000000'; // Cor preta
-      context.fillRect(center.x, center.y, 1, 1); // Desenha um pixel no centro
+      context.fillStyle = '#000000';
+      context.fillRect(center.x, center.y, 1, 1);
     }
 
-    // --- DESENHA OS PONTOS DOS OBJETOS EM ANIMAÇÃO ---
+    if (selectedAlgorithm === 'bezier' && parameters.bezier) {
+      const { p0, p1, p2, p3 } = parameters.bezier;
+
+      // P0 (Inicial) - Preto
+      context.fillStyle = '#000000';
+      context.fillRect(p0.x, p0.y, 1, 1);
+
+      // P1 e P2 (Controle) - Vermelho
+      context.fillStyle = '#FF0000'; // Vermelho
+      context.fillRect(p1.x, p1.y, 1, 1);
+      context.fillRect(p2.x, p2.y, 1, 1);
+
+      // P3 (Final) - Preto
+      context.fillStyle = '#000000';
+      context.fillRect(p3.x, p3.y, 1, 1);
+    }
+
     displayObjects.forEach(obj => {
       if (obj.points) {
         context.fillStyle = obj.color;

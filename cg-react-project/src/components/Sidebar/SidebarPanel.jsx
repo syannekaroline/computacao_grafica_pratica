@@ -4,18 +4,16 @@ import TableView from '../TableView/TableView';
 import AlgorithmView from '../AlgorithmView/AlgorithmView';
 import BresenhamPanel from '../ParameterPanels/Bresenham/BresenhamPanel';
 import CirclePanel from '../ParameterPanels/Circle/CirclePanel';
+import BezierPanel from '../ParameterPanels/Bezier/BezierPanel';
 
-// CORREÇÃO: A função agora aceita o objeto 'props' inteiro.
 function SidebarPanel(props) {
-  // CORREÇÃO: Agora desestruturamos 'props' aqui dentro, o que é a forma correta.
   const {
     activeMenu,
     selectedAlgorithm,
     onSelectAlgorithm,
     parameters,
     onParameterChange,
-    onDrawAlgorithm, // onDrawAlgorithm agora vem daqui
-    // O resto das props será passado para a TableView
+    onDrawAlgorithm,
     ...tableViewProps
   } = props;
 
@@ -27,7 +25,6 @@ function SidebarPanel(props) {
             selectedAlgorithm={selectedAlgorithm}
             onSelectAlgorithm={onSelectAlgorithm}
           />
-
           <div className="parameter-area">
             {selectedAlgorithm === 'bresenham' && (
               <BresenhamPanel
@@ -39,6 +36,13 @@ function SidebarPanel(props) {
             {selectedAlgorithm === 'circle' && (
               <CirclePanel
                 parameters={parameters.circle}
+                onParameterChange={onParameterChange}
+                onDrawAlgorithm={onDrawAlgorithm}
+              />
+            )}
+            {selectedAlgorithm === 'bezier' && (
+              <BezierPanel
+                parameters={parameters.bezier}
                 onParameterChange={onParameterChange}
                 onDrawAlgorithm={onDrawAlgorithm}
               />

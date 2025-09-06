@@ -1,15 +1,12 @@
 import React from 'react';
 import './AlgorithmView.css';
 
-// CORREÇÃO: A lista de algoritmos volta a ser definida aqui dentro.
-// Isso torna o componente autossuficiente e corrige o erro.
 const algorithms = [
   { id: 'bresenham', name: 'Bresenham' },
   { id: 'circle', name: 'Círculo' },
-  // Outros algoritmos serão adicionados aqui no futuro...
+  { id: 'bezier', name: 'Curva de Bézier' },
 ];
 
-// A prop 'algorithms' foi removida da lista de parâmetros da função
 function AlgorithmView({ selectedAlgorithm, onSelectAlgorithm }) {
   return (
     <div className="algorithm-view-container">

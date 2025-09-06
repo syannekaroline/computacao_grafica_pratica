@@ -16,13 +16,17 @@ function App() {
   // --- Seção de Pontos da Tabela ---
   const [points, setPoints] = useState([]);
 
-  // add no commit de add dos parametros do bresenham
   const [parameters, setParameters] = useState({
     bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 } },
     circle: { center: { x: 5, y: 5 }, radius: 4 },
-    // Futuramente, outros algoritmos virão aqui
+    bezier: {
+      p0: { x: 2, y: 2 },
+      p1: { x: 4, y: 8 },
+      p2: { x: 10, y: 9 },
+      p3: { x: 12, y: 3 },
+    },
   });
-  // Por enquanto, esta função não fará nada, mas é necessária para os inputs
+
   const handleParameterChange = (algorithm, paramName, value) => {
     setParameters(prevParams => ({
       ...prevParams,
@@ -33,7 +37,6 @@ function App() {
     }));
   };
 
-  // --- NOVA FUNÇÃO DE RESET ---
   const handleReset = () => {
     setDrawnObjects([]);
   };
@@ -47,14 +50,13 @@ function App() {
   }, []);
   const handleMouseUp = useCallback(() => { isResizingRef.current = false; }, []);
 
-  //bresenham
   const handleDrawAlgorithm = () => {
     if (selectedAlgorithm === 'bresenham') {
       const newObject = {
         id: `bresenham-${Date.now()}`,
         type: 'bresenham',
         params: { ...parameters.bresenham },
-        color: '#5d1cc5', // 
+        color: '#5d1cc5',
       };
       setDrawnObjects(prevObjects => [...prevObjects, newObject]);
     } else if (selectedAlgorithm === 'circle') {
@@ -62,11 +64,19 @@ function App() {
         id: `circle-${Date.now()}`,
         type: 'circle',
         params: { ...parameters.circle },
-        color: '#5d1cc5',
+        color: '#e22d2d',
+      };
+      setDrawnObjects(prevObjects => [...prevObjects, newObject]);
+    } else if (selectedAlgorithm === 'bezier') {
+      const newObject = {
+        id: `bezier-${Date.now()}`,
+        type: 'bezier',
+        params: { ...parameters.bezier },
+        color: '#5d1cc5ff', // Cor fixa definida aqui
       };
       setDrawnObjects(prevObjects => [...prevObjects, newObject]);
     }
-  };;
+  };
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
@@ -87,7 +97,6 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* Adicione a prop onReset aqui */}
       <TopMenu
         currentMode={currentMode}
         onModeChange={setCurrentMode}
