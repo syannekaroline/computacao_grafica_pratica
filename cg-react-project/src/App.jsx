@@ -76,8 +76,8 @@ function App() {
       };
       setDrawnObjects(prevObjects => [...prevObjects, newObject]);
     } else if (selectedAlgorithm === 'polyline') {
-        if (points.length < 2) {
-            alert("Para desenhar uma polilinha, adicione pelo menos 2 pontos na Tabela de Pontos.");
+        if (points.length < 3) {
+            alert("Para desenhar uma polilinha, adicione pelo menos 3 pontos na Tabela de Pontos.");
             return;
         }
         const newObject = {

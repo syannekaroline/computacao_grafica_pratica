@@ -62,6 +62,11 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
                 const segment = calculateBresenhamLine(obj.params.points[i], obj.params.points[i+1]);
                 allPoints.push(...segment);
             }
+            // Conecta o último ponto (Pn) de volta ao primeiro (P0)
+            if (obj.params.points.length > 1) {
+                const closingSegment = calculateBresenhamLine(obj.params.points[obj.params.points.length - 1], obj.params.points[0]);
+                allPoints.push(...closingSegment);
+            }
         }
 
         const animatedObj = { ...obj, pointsToAnimate: allPoints, points: [] }; // Renomeando para evitar conflito
