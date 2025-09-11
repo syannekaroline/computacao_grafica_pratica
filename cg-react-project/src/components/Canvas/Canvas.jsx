@@ -3,6 +3,22 @@ import './Canvas.css';
 import { calculateBresenhamLine } from '../../algorithms/bresenham';
 import { calculateCirclePoints } from '../../algorithms/circle';
 import { calculateBezierCurve } from '../../algorithms/bezier';
+import { calculateScanlineFill } from '../../algorithms/scanlineFill';
+import { calculateFloodFill } from '../../algorithms/floodFill';
+
+// Função auxiliar para converter cores hexadecimais para o formato RGBA
+const hexToRgba = (hex) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? [
+        parseInt(result[1], 16),
+        parseInt(result[2], 16),
+        parseInt(result[3], 16),
+        255, // Alpha
+      ]
+    : [0, 0, 0, 255]; // Retorna preto como padrão
+};
+
 
 function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
   const canvasRef = useRef(null);
@@ -47,6 +63,7 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
     if (newObjects.length > 0) {
       newObjects.forEach((obj) => {
         let allPoints = [];
+
         if (obj.type === 'bresenham') {
           allPoints = calculateBresenhamLine(obj.params.p1, obj.params.p2);
         } else if (obj.type === 'circle') {
@@ -62,14 +79,69 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
                 const segment = calculateBresenhamLine(obj.params.points[i], obj.params.points[i+1]);
                 allPoints.push(...segment);
             }
-            // Conecta o último ponto (Pn) de volta ao primeiro (P0)
             if (obj.params.points.length > 1) {
                 const closingSegment = calculateBresenhamLine(obj.params.points[obj.params.points.length - 1], obj.params.points[0]);
                 allPoints.push(...closingSegment);
             }
+        } else if (obj.type === 'scanlineFill') {
+            allPoints = calculateScanlineFill(obj.params.points);
+        } else if (obj.type === 'floodFill') {
+            const boundaryObjects = displayObjects.filter(d => d.type !== 'floodFill' && d.points.length > 0);
+            if (boundaryObjects.length === 0) return;
+
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            boundaryObjects.forEach(bObj => {
+                bObj.points.forEach(p => {
+                    minX = Math.min(minX, p.x);
+                    minY = Math.min(minY, p.y);
+                    maxX = Math.max(maxX, p.x);
+                    maxY = Math.max(maxY, p.y);
+                });
+            });
+
+            minX -= 2; minY -= 2; maxX += 2; maxY += 2;
+
+            const width = maxX - minX + 1;
+            const height = maxY - minY + 1;
+
+            if (width <= 0 || height <= 0) return;
+
+            const offscreenCanvas = document.createElement('canvas');
+            offscreenCanvas.width = width;
+            offscreenCanvas.height = height;
+            const ctx = offscreenCanvas.getContext('2d');
+            
+            ctx.fillStyle = '#000000'; // Cor da borda: preto
+            
+            boundaryObjects.forEach(bObj => {
+                bObj.points.forEach(p => {
+                    const translatedX = p.x - minX;
+                    const translatedY = p.y - minY;
+                    ctx.fillRect(translatedX, translatedY, 1, 1);
+                });
+            });
+            
+            const imageData = ctx.getImageData(0, 0, width, height);
+
+            const seed = obj.params.seed;
+            const translatedSeed = {
+                x: Math.round(seed.x - minX),
+                y: Math.round(seed.y - minY)
+            };
+
+            const fillColorRgba = hexToRgba(obj.color);
+            const boundaryColorRgba = [0, 0, 0, 255]; // Preto
+
+            const pointsToFill = calculateFloodFill(translatedSeed, imageData, fillColorRgba, boundaryColorRgba);
+
+            allPoints = pointsToFill.map(p => ({
+                x: p.x + minX,
+                y: p.y + minY,
+            }));
         }
 
-        const animatedObj = { ...obj, pointsToAnimate: allPoints, points: [] }; // Renomeando para evitar conflito
+
+        const animatedObj = { ...obj, pointsToAnimate: allPoints, points: [] };
         setDisplayObjects((prev) => [...prev, animatedObj]);
 
         let i = 0;
@@ -82,11 +154,18 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
                   : d
               )
             );
-            i++;
+            i+=10; // Acelera a animação de preenchimento
           } else {
+             setDisplayObjects((prev) =>
+              prev.map((d) =>
+                d.id === obj.id
+                  ? { ...d, points: allPoints }
+                  : d
+              )
+            );
             clearInterval(intervalId);
           }
-        }, 20);
+        }, 1); // Intervalo menor para preenchimento mais rápido
       });
     }
   }, [drawnObjects]);
@@ -157,8 +236,7 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
     context.fillText('0', 0.5, 15 / zoom);
     context.restore();
 
-    // DESENHA PONTOS DA TABELA (VÉRTICES DA POLILINHA EM TEMPO REAL)
-    context.fillStyle = '#000000'; // Pontos em preto
+    context.fillStyle = '#000000';
     points.forEach(point => {
       context.fillRect(point.x, point.y, 1, 1);
     });
