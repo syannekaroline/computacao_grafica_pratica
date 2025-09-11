@@ -1,24 +1,35 @@
+/* ========================================= */
+/* ESTILOS GERAIS PARA PAINÉIS DE PARÂMETROS */
+/* ========================================= */
+
 .param-panel-container {
   margin-top: 20px;
   padding-top: 20px;
   border-top: 1px solid #eee;
 }
 
-.param-panel-container h4 {
+.param-panel-container h4,
+.parameter-panel h4 {
   margin-top: 0;
   margin-bottom: 15px;
+  color: #333; /* Cor escura para garantir a leitura */
+}
+
+.parameter-panel p {
   color: #555;
+  font-size: 14px;
+  margin-top: 0;
 }
 
 .param-group {
-  margin-bottom: 15px;
+  margin-bottom: 24px; /* Espaçamento padronizado entre os grupos */
 }
 
-.param-group label {
+.param-group > label {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   color: #333;
 }
 
@@ -54,4 +65,65 @@
   font-weight: bold;
   cursor: pointer;
   margin-top: 10px;
+}
+
+/* ======================================================= */
+/* ESTILOS ESPECÍFICOS PARA O PAINEL DE TRANSFORMAÇÕES */
+/* ======================================================= */
+
+/* Centraliza os grupos de input (X e Y) usando Flexbox */
+.coord-inputs.labeled-inputs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Container para um label e um input (ex: "X:" e o campo de texto) */
+.input-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Estilo para os labels pequenos (X:, Y:, SX:) */
+.input-group label {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Define uma largura fixa para os inputs numéricos */
+.input-group input[type="number"] {
+  width: 70px; 
+  text-align: center;
+}
+
+/* Ajusta o input de ângulo para não ficar tão largo */
+.coord-inputs.single-input {
+  padding: 0 10%;
+}
+.coord-inputs.single-input input {
+  width: 100%;
+}
+
+/* Container para centralizar os botões de forma robusta */
+.button-container {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.button-container button {
+  width: 80%;
+  max-width: 200px;
+}
+
+/* Estilo específico para o botão de reset */
+.reset-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+.reset-button:hover {
+  background-color: #5a6268;
 }

@@ -2,7 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Canvas from './components/Canvas/Canvas';
 import Sidebar from './components/Sidebar/Sidebar';
 import TopMenu from './components/TopMenu/TopMenu';
+import { translate, rotate, scale } from './algorithms/transformations';
 import './App.css';
+
+const INITIAL_POLYGON = [
+  { x: 10, y: 10 }, { x: 15, y: 15 }, { x: 10, y: 20 }, { x: 5, y: 15 }
+];
 
 function App() {
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
@@ -12,8 +17,10 @@ function App() {
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const isResizingRef = useRef(false);
   const [drawnObjects, setDrawnObjects] = useState([]);
-
   const [points, setPoints] = useState([]);
+
+  const [basePolygon, setBasePolygon] = useState(INITIAL_POLYGON);
+  const [transformedPolygon, setTransformedPolygon] = useState(INITIAL_POLYGON);
 
   const [parameters, setParameters] = useState({
     bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 } },
@@ -23,18 +30,32 @@ function App() {
       p2: { x: 10, y: 9 }, p3: { x: 12, y: 3 },
     },
     floodFill: { seed: { x: 3, y: 3 } },
+    transformations: {
+      translate: { tx: 5, ty: 5 },
+      scale: { sx: 1.2, sy: 1.2, fixedX: 10, fixedY: 10 },
+      rotate: { angle: 30, pivotX: 10, pivotY: 10 },
+    }
   });
 
   const handleParameterChange = (algorithm, paramName, value) => {
-    setParameters(prevParams => ({
-      ...prevParams,
-      [algorithm]: { ...prevParams[algorithm], [paramName]: value },
-    }));
+    if (algorithm === 'transformations') {
+        setParameters(prevParams => ({
+            ...prevParams,
+            transformations: { ...prevParams.transformations, [paramName]: value }
+        }));
+    } else {
+        setParameters(prevParams => ({
+            ...prevParams,
+            [algorithm]: { ...prevParams[algorithm], [paramName]: value }
+        }));
+    }
   };
 
   const handleReset = () => {
     setDrawnObjects([]);
-    setPoints([]); // Também limpa os pontos da tabela
+    setPoints([]);
+    setBasePolygon(INITIAL_POLYGON);
+    setTransformedPolygon(INITIAL_POLYGON);
   };
 
   const handleMouseDown = (e) => { e.preventDefault(); isResizingRef.current = true; };
@@ -65,7 +86,11 @@ function App() {
           return;
         }
         newObject = { ...commonProps, type: 'polyline', params: { points: [...points] }, color: '#000000' };
+        setBasePolygon([...points]);
+        setTransformedPolygon([...points]);
         break;
+      
+      // --- LÓGICA RESTAURADA ---
       case 'scanlineFill':
         if (points.length < 3) {
           alert("Para preencher com Varredura, o polígono precisa de pelo menos 3 pontos.");
@@ -76,10 +101,56 @@ function App() {
       case 'floodFill':
         newObject = { ...commonProps, type: 'floodFill', params: { ...parameters.floodFill }, color: '#3498db' };
         break;
+      // --- FIM DA LÓGICA RESTAURADA ---
+        
       default:
         return;
     }
     setDrawnObjects(prev => [...prev, newObject]);
+  };
+
+  const handleApplyTranslate = () => {
+    const { tx, ty } = parameters.transformations.translate;
+    const newVertices = translate(transformedPolygon, tx, ty);
+    setTransformedPolygon(newVertices);
+  };
+  
+  const handleApplyScale = () => {
+    const { sx, sy, fixedX, fixedY } = parameters.transformations.scale;
+    const fixedPoint = { x: fixedX, y: fixedY };
+
+    const isFixedPointVertex = transformedPolygon.some(
+      vertex => Math.round(vertex.x) === fixedPoint.x && Math.round(vertex.y) === fixedPoint.y
+    );
+
+    if (!isFixedPointVertex) {
+      alert('O ponto fixo escolhido deve ser um dos vértices do polígono!');
+      return;
+    }
+    
+    const newVertices = scale(transformedPolygon, sx, sy, fixedPoint);
+    setTransformedPolygon(newVertices);
+  };
+
+  const handleApplyRotate = () => {
+    const { angle, pivotX, pivotY } = parameters.transformations.rotate;
+    const pivot = { x: pivotX, y: pivotY };
+
+    const isPivotVertex = transformedPolygon.some(
+      vertex => Math.round(vertex.x) === pivot.x && Math.round(vertex.y) === pivot.y
+    );
+
+    if (!isPivotVertex) {
+      alert('O pivô escolhido deve ser um dos vértices do polígono!');
+      return;
+    }
+    
+    const newVertices = rotate(transformedPolygon, angle, pivot);
+    setTransformedPolygon(newVertices);
+  };
+
+  const handleResetPolygon = () => {
+    setTransformedPolygon(basePolygon);
   };
 
   useEffect(() => {
@@ -110,16 +181,21 @@ function App() {
             selectedAlgorithm={selectedAlgorithm} onSelectAlgorithm={setSelectedAlgorithm}
             parameters={parameters} onParameterChange={handleParameterChange}
             onDrawAlgorithm={handleDrawAlgorithm}
+            onApplyTranslate={handleApplyTranslate}
+            onApplyScale={handleApplyScale}
+            onApplyRotate={handleApplyRotate}
+            onResetPolygon={handleResetPolygon}
           />
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />
         <div className="canvas-container">
-          {/* CORREÇÃO: Adicionadas as propriedades que faltavam */}
           <Canvas
             drawnObjects={drawnObjects}
             points={points}
             parameters={parameters}
             selectedAlgorithm={selectedAlgorithm}
+            polygonToTransform={transformedPolygon}
+            activeMenu={activeSidebarMenu} 
           />
         </div>
       </div>

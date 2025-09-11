@@ -7,6 +7,8 @@ import CirclePanel from '../ParameterPanels/Circle/CirclePanel';
 import BezierPanel from '../ParameterPanels/Bezier/BezierPanel';
 import FloodFillPanel from '../ParameterPanels/FloodFill/FloodFillPanel';
 import ScanlineFillPanel from '../ParameterPanels/Scanline/ScanlineFillPanel';
+import { TransformationsPanel } from '../ParameterPanels/Transformations/TransformationsPanel';
+
 
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
     return (
@@ -29,6 +31,10 @@ function SidebarPanel(props) {
     onParameterChange,
     onDrawAlgorithm,
     onMenuChange,
+    onApplyTranslate,
+    onApplyScale,
+    onApplyRotate,
+    onResetPolygon,
     ...tableViewProps
   } = props;
 
@@ -86,8 +92,15 @@ function SidebarPanel(props) {
       )}
 
       {activeMenu === 'TRANSFORMS' && (
-        <div>
-          <h3>Transformações Geométricas</h3>
+        <div className="parameter-area">
+          <TransformationsPanel
+            parameters={parameters.transformations}
+            onParameterChange={(group, value) => onParameterChange('transformations', group, value)}
+            onTranslate={onApplyTranslate}
+            onScale={onApplyScale}
+            onRotate={onApplyRotate}
+            onReset={onResetPolygon}
+          />
         </div>
       )}
 
