@@ -5,6 +5,8 @@ import AlgorithmView from '../AlgorithmView/AlgorithmView';
 import BresenhamPanel from '../ParameterPanels/Bresenham/BresenhamPanel';
 import CirclePanel from '../ParameterPanels/Circle/CirclePanel';
 import BezierPanel from '../ParameterPanels/Bezier/BezierPanel';
+import FloodFillPanel from '../ParameterPanels/FloodFill/FloodFillPanel';
+import ScanlineFillPanel from '../ParameterPanels/Scanline/ScanlineFillPanel';
 import { TransformationsPanel } from '../ParameterPanels/Transformations/TransformationsPanel';
 
 
@@ -71,6 +73,19 @@ function SidebarPanel(props) {
                     onDrawAlgorithm={onDrawAlgorithm}
                     onMenuChange={onMenuChange}
                 />
+            )}
+            {selectedAlgorithm === 'floodFill' && (
+              <FloodFillPanel
+                parameters={parameters.floodFill}
+                onParameterChange={onParameterChange}
+                onDrawAlgorithm={onDrawAlgorithm}
+              />
+            )}
+            {selectedAlgorithm === 'scanlineFill' && (
+              <ScanlineFillPanel
+                onDrawAlgorithm={onDrawAlgorithm}
+                onMenuChange={onMenuChange}
+              />
             )}
           </div>
         </>

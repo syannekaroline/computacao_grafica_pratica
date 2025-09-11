@@ -6,12 +6,14 @@ const algorithms = [
   { id: 'circle', name: 'Círculo' },
   { id: 'bezier', name: 'Curva de Bézier' },
   { id: 'polyline', name: 'Polilinha/Polígono' },
+  { id: 'floodFill', name: 'Preenchimento Recursivo' },
+  { id: 'scanlineFill', name: 'Preenchimento por Varredura' },
 ];
 
 function AlgorithmView({ selectedAlgorithm, onSelectAlgorithm }) {
   return (
     <div className="algorithm-view-container">
-      <h3>Algoritmos de Rasterização</h3>
+      <h3>Algoritmos</h3>
       <ul className="algorithm-list">
         {algorithms.map((algo) => (
           <li key={algo.id}>
