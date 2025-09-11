@@ -3,6 +3,8 @@ import Canvas from './components/Canvas/Canvas';
 import Sidebar from './components/Sidebar/Sidebar';
 import TopMenu from './components/TopMenu/TopMenu';
 import { translate, rotate, scale } from './algorithms/transformations';
+import { cohenSutherlandClip } from './algorithms/cohenSutherland';
+import { calculateBresenhamLine } from './algorithms/bresenham';
 import './App.css';
 
 const INITIAL_POLYGON = [
@@ -21,6 +23,8 @@ function App() {
 
   const [basePolygon, setBasePolygon] = useState(INITIAL_POLYGON);
   const [transformedPolygon, setTransformedPolygon] = useState(INITIAL_POLYGON);
+
+  const [clipWindow, setClipWindow] = useState({ xMin: 0, yMin: 0, xMax: 10, yMax: 10 });
 
   const [parameters, setParameters] = useState({
     bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 } },
@@ -72,7 +76,9 @@ function App() {
 
     switch (selectedAlgorithm) {
       case 'bresenham':
-        newObject = { ...commonProps, type: 'bresenham', params: { ...parameters.bresenham }, color: '#5d1cc5' };
+        const { p1, p2 } = parameters.bresenham;
+        const pixels = calculateBresenhamLine(p1, p2);
+        newObject = { ...commonProps, type: 'bresenham', params: { ...parameters.bresenham }, color: '#5d1cc5', pixels: pixels };
         break;
       case 'circle':
         newObject = { ...commonProps, type: 'circle', params: { ...parameters.circle }, color: '#5d1cc5' };
@@ -107,6 +113,47 @@ function App() {
         return;
     }
     setDrawnObjects(prev => [...prev, newObject]);
+  };
+
+  const handleApplyClip = () => {
+    const { xMin, yMin, xMax, yMax } = clipWindow;
+
+    if (xMin >= xMax || yMin >= yMax) {
+      alert("Erro: Os valores mínimos da janela de recorte devem ser menores que os valores máximos.");
+      return;
+    }
+
+    const updatedObjects = drawnObjects
+      .map(obj => {
+        if (obj.type === 'bresenham') {
+          const { p1, p2 } = obj.params;
+          const clippedEndpoints = cohenSutherlandClip(p1.x, p1.y, p2.x, p2.y, xMin, yMin, xMax, yMax);
+          
+          if (!clippedEndpoints) {
+            return null;
+          }
+
+          const filteredPixels = obj.pixels.filter(p => 
+            p.x >= xMin && p.x < xMax && p.y >= yMin && p.y < yMax
+          );
+
+          if (filteredPixels.length > 0) {
+            return { 
+                ...obj, 
+                pixels: filteredPixels,
+                params: { 
+                  p1: { x: clippedEndpoints.x1, y: clippedEndpoints.y1 }, 
+                  p2: { x: clippedEndpoints.x2, y: clippedEndpoints.y2 } 
+                }
+            };
+          }
+          return null;
+        }
+        return obj;
+      })
+      .filter(obj => obj !== null);
+
+    setDrawnObjects(updatedObjects);
   };
 
   const handleApplyTranslate = () => {
@@ -185,6 +232,9 @@ function App() {
             onApplyScale={handleApplyScale}
             onApplyRotate={handleApplyRotate}
             onResetPolygon={handleResetPolygon}
+            clipWindow={clipWindow}
+            setClipWindow={setClipWindow}
+            onApplyClip={handleApplyClip}
           />
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />
@@ -196,6 +246,7 @@ function App() {
             selectedAlgorithm={selectedAlgorithm}
             polygonToTransform={transformedPolygon}
             activeMenu={activeSidebarMenu} 
+            clipWindow={clipWindow}
           />
         </div>
       </div>

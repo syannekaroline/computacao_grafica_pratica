@@ -6,7 +6,6 @@ import { calculateBezierCurve } from '../../algorithms/bezier';
 import { calculateScanlineFill } from '../../algorithms/scanlineFill';
 import { calculateFloodFill } from '../../algorithms/floodFill';
 
-// Função auxiliar para converter cores hexadecimais para o formato RGBA
 const hexToRgba = (hex) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
@@ -14,13 +13,20 @@ const hexToRgba = (hex) => {
         parseInt(result[1], 16),
         parseInt(result[2], 16),
         parseInt(result[3], 16),
-        255, // Alpha
+        255,
       ]
-    : [0, 0, 0, 255]; // Retorna preto como padrão
+    : [0, 0, 0, 255];
 };
 
-
-function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonToTransform, activeMenu }) {
+function Canvas({
+  points,
+  parameters,
+  selectedAlgorithm,
+  drawnObjects,
+  polygonToTransform,
+  activeMenu,
+  clipWindow
+}) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -29,7 +35,7 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-
+  
   const [displayObjects, setDisplayObjects] = useState([]);
 
   useEffect(() => {
@@ -42,132 +48,95 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
         canvas.height = height;
       }
     });
-
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current);
     }
-
     return () => resizeObserver.disconnect();
   }, []);
 
   useEffect(() => {
-    if (drawnObjects.length === 0) {
-      setDisplayObjects([]);
-      return;
-    }
+    // Passo 1: Processa todos os objetos, exceto o Flood Fill.
+    let processedObjects = drawnObjects.map(obj => {
+      if (obj.type === 'floodFill') return obj; // Pula o Flood Fill por enquanto
 
-    const newObjects = drawnObjects.filter(
-      (dObj) => !displayObjects.some((dispObj) => dispObj.id === dObj.id)
-    );
+      if (obj.pixels && obj.type === 'bresenham') { // Usa pixels pré-calculados do Bresenham
+        return obj;
+      }
 
-    if (newObjects.length > 0) {
-      newObjects.forEach((obj) => {
-        let allPoints = [];
-
-        if (obj.type === 'bresenham') {
+      let allPoints = [];
+      if (obj.type === 'bresenham') {
           allPoints = calculateBresenhamLine(obj.params.p1, obj.params.p2);
-        } else if (obj.type === 'circle') {
-          allPoints = calculateCirclePoints(obj.params.center, obj.params.radius);
-        } else if (obj.type === 'bezier') {
-          const curvePoints = calculateBezierCurve(obj.params.p0, obj.params.p1, obj.params.p2, obj.params.p3);
-          for (let i = 0; i < curvePoints.length - 1; i++) {
-            const segment = calculateBresenhamLine(curvePoints[i], curvePoints[i + 1]);
-            allPoints.push(...segment);
-          }
-        } else if (obj.type === 'polyline') {
-            for (let i = 0; i < obj.params.points.length - 1; i++) {
-                const segment = calculateBresenhamLine(obj.params.points[i], obj.params.points[i+1]);
-                allPoints.push(...segment);
-            }
-            if (obj.params.points.length > 1) {
-                const closingSegment = calculateBresenhamLine(obj.params.points[obj.params.points.length - 1], obj.params.points[0]);
-                allPoints.push(...closingSegment);
-            }
-        } else if (obj.type === 'scanlineFill') {
-            allPoints = calculateScanlineFill(obj.params.points);
-        } else if (obj.type === 'floodFill') {
-            const boundaryObjects = displayObjects.filter(d => d.type !== 'floodFill' && d.points.length > 0);
-            if (boundaryObjects.length === 0) return;
-
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            boundaryObjects.forEach(bObj => {
-                bObj.points.forEach(p => {
-                    minX = Math.min(minX, p.x);
-                    minY = Math.min(minY, p.y);
-                    maxX = Math.max(maxX, p.x);
-                    maxY = Math.max(maxY, p.y);
-                });
-            });
-
-            minX -= 2; minY -= 2; maxX += 2; maxY += 2;
-
-            const width = maxX - minX + 1;
-            const height = maxY - minY + 1;
-
-            if (width <= 0 || height <= 0) return;
-
-            const offscreenCanvas = document.createElement('canvas');
-            offscreenCanvas.width = width;
-            offscreenCanvas.height = height;
-            const ctx = offscreenCanvas.getContext('2d');
-            
-            ctx.fillStyle = '#000000'; // Cor da borda: preto
-            
-            boundaryObjects.forEach(bObj => {
-                bObj.points.forEach(p => {
-                    const translatedX = p.x - minX;
-                    const translatedY = p.y - minY;
-                    ctx.fillRect(translatedX, translatedY, 1, 1);
-                });
-            });
-            
-            const imageData = ctx.getImageData(0, 0, width, height);
-
-            const seed = obj.params.seed;
-            const translatedSeed = {
-                x: Math.round(seed.x - minX),
-                y: Math.round(seed.y - minY)
-            };
-
-            const fillColorRgba = hexToRgba(obj.color);
-            const boundaryColorRgba = [0, 0, 0, 255]; // Preto
-
-            const pointsToFill = calculateFloodFill(translatedSeed, imageData, fillColorRgba, boundaryColorRgba);
-
-            allPoints = pointsToFill.map(p => ({
-                x: p.x + minX,
-                y: p.y + minY,
-            }));
+      } else if (obj.type === 'circle') {
+        allPoints = calculateCirclePoints(obj.params.center, obj.params.radius);
+      } else if (obj.type === 'bezier') {
+        const curvePoints = calculateBezierCurve(obj.params.p0, obj.params.p1, obj.params.p2, obj.params.p3);
+        for (let i = 0; i < curvePoints.length - 1; i++) {
+          allPoints.push(...calculateBresenhamLine(curvePoints[i], curvePoints[i + 1]));
         }
-
-
-        const animatedObj = { ...obj, pointsToAnimate: allPoints, points: [] };
-        setDisplayObjects((prev) => [...prev, animatedObj]);
-
-        let i = 0;
-        const intervalId = setInterval(() => {
-          if (i < allPoints.length) {
-            setDisplayObjects((prev) =>
-              prev.map((d) =>
-                d.id === obj.id
-                  ? { ...d, points: allPoints.slice(0, i + 1) }
-                  : d
-              )
-            );
-            i+=10; // Acelera a animação de preenchimento
-          } else {
-             setDisplayObjects((prev) =>
-              prev.map((d) =>
-                d.id === obj.id
-                  ? { ...d, points: allPoints }
-                  : d
-              )
-            );
-            clearInterval(intervalId);
+      } else if (obj.type === 'polyline') {
+          for (let i = 0; i < obj.params.points.length - 1; i++) {
+              allPoints.push(...calculateBresenhamLine(obj.params.points[i], obj.params.points[i+1]));
           }
-        }, 1); // Intervalo menor para preenchimento mais rápido
-      });
-    }
+          if (obj.params.points.length > 1) {
+              allPoints.push(...calculateBresenhamLine(obj.params.points[obj.params.points.length - 1], obj.params.points[0]));
+          }
+      } else if (obj.type === 'scanlineFill') {
+          allPoints = calculateScanlineFill(obj.params.points);
+      }
+      return { ...obj, pixels: allPoints };
+    });
+
+    // Passo 2: Agora processa os objetos Flood Fill, usando os outros como fronteira.
+    processedObjects = processedObjects.map(obj => {
+      if (obj.type === 'floodFill') {
+        const boundaryObjects = processedObjects.filter(d => d.id !== obj.id && d.pixels && d.pixels.length > 0);
+        if (boundaryObjects.length === 0) return { ...obj, pixels: [] };
+
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        boundaryObjects.forEach(bObj => {
+            bObj.pixels.forEach(p => {
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x);
+                maxY = Math.max(maxY, p.y);
+            });
+        });
+
+        minX -= 2; minY -= 2; maxX += 2; maxY += 2;
+
+        const width = maxX - minX + 1;
+        const height = maxY - minY + 1;
+
+        if (width <= 0 || height <= 0 || !isFinite(width) || !isFinite(height)) return { ...obj, pixels: [] };
+
+        const offscreenCanvas = document.createElement('canvas');
+        offscreenCanvas.width = width;
+        offscreenCanvas.height = height;
+        const ctx = offscreenCanvas.getContext('2d', { willReadFrequently: true });
+        
+        ctx.fillStyle = '#000000';
+        boundaryObjects.forEach(bObj => {
+            bObj.pixels.forEach(p => {
+                ctx.fillRect(p.x - minX, p.y - minY, 1, 1);
+            });
+        });
+        
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const seed = obj.params.seed;
+        const translatedSeed = {
+            x: Math.round(seed.x - minX),
+            y: Math.round(seed.y - minY)
+        };
+        const fillColorRgba = hexToRgba(obj.color);
+        const boundaryColorRgba = [0, 0, 0, 255];
+        const pointsToFill = calculateFloodFill(translatedSeed, imageData, fillColorRgba, boundaryColorRgba);
+        const allPoints = pointsToFill.map(p => ({ x: p.x + minX, y: p.y + minY }));
+        return { ...obj, pixels: allPoints };
+      }
+      return obj;
+    });
+
+    setDisplayObjects(processedObjects);
   }, [drawnObjects]);
 
   useEffect(() => {
@@ -192,14 +161,12 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
     const gridSize = 1;
     context.lineWidth = 1 / zoom;
     context.strokeStyle = '#e0e0e0';
-
     for (let x = Math.floor(view.left); x < view.right; x += gridSize) {
       context.beginPath();
       context.moveTo(x, view.bottom);
       context.lineTo(x, view.top);
       context.stroke();
     }
-
     for (let y = Math.floor(view.bottom); y < view.top; y += gridSize) {
       context.beginPath();
       context.moveTo(view.left, y);
@@ -209,12 +176,10 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
 
     context.lineWidth = 2 / zoom;
     context.strokeStyle = '#a0a0a0';
-
     context.beginPath();
     context.moveTo(view.left, 0);
     context.lineTo(view.right, 0);
     context.stroke();
-
     context.beginPath();
     context.moveTo(0, view.bottom);
     context.lineTo(0, view.top);
@@ -226,7 +191,6 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
     context.fillStyle = '#666';
     context.textAlign = 'center';
     context.textBaseline = 'middle';
-
     for (let x = Math.floor(view.left); x < view.right; x += gridSize) {
       if (x !== 0) context.fillText(x, x + 0.5, 15 / zoom);
     }
@@ -247,28 +211,25 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
       context.fillRect(p1.x, p1.y, 1, 1);
       context.fillRect(p2.x, p2.y, 1, 1);
     }
-
     if (selectedAlgorithm === 'circle' && parameters.circle && parameters.circle.center) {
       const { center } = parameters.circle;
       context.fillStyle = '#000000';
       context.fillRect(center.x, center.y, 1, 1);
     }
-
     if (selectedAlgorithm === 'bezier' && parameters.bezier) {
       const { p0, p1, p2, p3 } = parameters.bezier;
       context.fillStyle = '#000000';
       context.fillRect(p0.x, p0.y, 1, 1);
+      context.fillRect(p3.x, p3.y, 1, 1);
       context.fillStyle = '#FF0000';
       context.fillRect(p1.x, p1.y, 1, 1);
       context.fillRect(p2.x, p2.y, 1, 1);
-      context.fillStyle = '#000000';
-      context.fillRect(p3.x, p3.y, 1, 1);
     }
-
+    
     displayObjects.forEach(obj => {
-      if (obj.points) {
+      if (obj.pixels) {
         context.fillStyle = obj.color;
-        obj.points.forEach(point => {
+        obj.pixels.forEach(point => {
           context.fillRect(point.x, point.y, 1, 1);
         });
       }
@@ -276,16 +237,11 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
 
     if (activeMenu === 'TRANSFORMS' && polygonToTransform) {
       const vertices = polygonToTransform;
-      
-      // Usa Bresenham para desenhar as arestas do polígono
       if (vertices.length > 1) {
-        context.fillStyle = '#ff0000'; // Cor vermelha para destacar
-        
+        context.fillStyle = '#ff0000';
         for (let i = 0; i < vertices.length; i++) {
           const startPoint = vertices[i];
-          // Conecta o último ponto de volta ao primeiro para fechar o polígono
           const endPoint = vertices[(i + 1) % vertices.length];
-          
           const edgePixels = calculateBresenhamLine(startPoint, endPoint);
           edgePixels.forEach(p => {
             context.fillRect(p.x, p.y, 1, 1);
@@ -293,15 +249,22 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonTo
         }
       }
     }
+    
+    if (selectedAlgorithm === 'cohenSutherland') {
+        const { xMin, yMin, xMax, yMax } = clipWindow;
+        context.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+        context.lineWidth = 1.5 / zoom;
+        context.strokeRect(xMin, yMin, xMax - xMin, yMax - yMin);
+    }
 
     context.restore();
-  }, [zoom, panOffset, points, canvasSize, parameters, selectedAlgorithm, displayObjects, activeMenu, polygonToTransform]);
+  }, [zoom, panOffset, canvasSize, displayObjects, activeMenu, polygonToTransform, clipWindow, points, selectedAlgorithm, parameters]);
 
   const handleMouseDown = (e) => {
     setIsPanning(true);
     setLastPanPosition({ x: e.clientX, y: e.clientY });
   };
-
+  
   const handleMouseMove = (e) => {
     if (isPanning) {
       const dx = (e.clientX - lastPanPosition.x) / zoom;
