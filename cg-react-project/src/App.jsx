@@ -2,8 +2,12 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Canvas from './components/Canvas/Canvas';
 import Sidebar from './components/Sidebar/Sidebar';
 import TopMenu from './components/TopMenu/TopMenu';
+import { translate, rotate, scale } from './algorithms/transformations';
 import './App.css';
 
+const INITIAL_POLYGON = [
+  { x: 10, y: 10 }, { x: 15, y: 15 }, { x: 10, y: 20 }, { x: 5, y: 15 }
+];
 function App() {
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
   const [currentMode, setCurrentMode] = useState('SELECT');
@@ -16,6 +20,9 @@ function App() {
   // --- Seção de Pontos da Tabela ---
   const [points, setPoints] = useState([]);
 
+  const [basePolygon, setBasePolygon] = useState(INITIAL_POLYGON);
+  const [transformedPolygon, setTransformedPolygon] = useState(INITIAL_POLYGON);
+
   const [parameters, setParameters] = useState({
     bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 } },
     circle: { center: { x: 5, y: 5 }, radius: 4 },
@@ -25,20 +32,39 @@ function App() {
       p2: { x: 10, y: 9 },
       p3: { x: 12, y: 3 },
     },
+    transformations: {
+      translate: { tx: 5, ty: 5 },
+      scale: { sx: 1.2, sy: 1.2, fixedX: 10, fixedY: 10 },
+      rotate: { angle: 30, pivotX: 10, pivotY: 10 },
+    }
   });
 
+  
+
   const handleParameterChange = (algorithm, paramName, value) => {
-    setParameters(prevParams => ({
-      ...prevParams,
-      [algorithm]: {
-        ...prevParams[algorithm],
-        [paramName]: value,
-      },
-    }));
+    if (algorithm === 'transformations') {
+        setParameters(prevParams => ({
+            ...prevParams,
+            transformations: {
+                ...prevParams.transformations,
+                [paramName]: value,
+            }
+        }));
+    } else {
+        setParameters(prevParams => ({
+            ...prevParams,
+            [algorithm]: {
+                ...prevParams[algorithm],
+                [paramName]: value,
+            },
+        }));
+    }
   };
 
   const handleReset = () => {
     setDrawnObjects([]);
+    setBasePolygon(INITIAL_POLYGON);
+    setTransformedPolygon(INITIAL_POLYGON);
   };
 
   const handleMouseDown = (e) => { e.preventDefault(); isResizingRef.current = true; };
@@ -87,7 +113,31 @@ function App() {
             color: '#5d1cc5',
         };
         setDrawnObjects(prevObjects => [...prevObjects, newObject]);
+        setBasePolygon([...points]);
+        setTransformedPolygon([...points]);
     }
+  };
+
+  const handleApplyTranslate = () => {
+    const { tx, ty } = parameters.transformations.translate;
+    const newVertices = translate(basePolygon, tx, ty);
+    setTransformedPolygon(newVertices);
+  };
+  
+  const handleApplyScale = () => {
+    const { sx, sy, fixedX, fixedY } = parameters.transformations.scale;
+    const newVertices = scale(basePolygon, sx, sy, { x: fixedX, y: fixedY });
+    setTransformedPolygon(newVertices);
+  };
+
+  const handleApplyRotate = () => {
+    const { angle, pivotX, pivotY } = parameters.transformations.rotate;
+    const newVertices = rotate(basePolygon, angle, { x: pivotX, y: pivotY });
+    setTransformedPolygon(newVertices);
+  };
+
+  const handleResetPolygon = () => {
+    setTransformedPolygon(basePolygon);
   };
 
   useEffect(() => {
@@ -128,6 +178,10 @@ function App() {
             parameters={parameters}
             onParameterChange={handleParameterChange}
             onDrawAlgorithm={handleDrawAlgorithm}
+            onApplyTranslate={handleApplyTranslate}
+            onApplyScale={handleApplyScale}
+            onApplyRotate={handleApplyRotate}
+            onResetPolygon={handleResetPolygon}
           />
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />
@@ -137,6 +191,8 @@ function App() {
             parameters={parameters}
             selectedAlgorithm={selectedAlgorithm}
             drawnObjects={drawnObjects}
+            polygonToTransform={transformedPolygon}
+            activeMenu={activeSidebarMenu} 
           />
         </div>
       </div>

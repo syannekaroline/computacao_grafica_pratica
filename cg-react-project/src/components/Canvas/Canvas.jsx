@@ -4,7 +4,7 @@ import { calculateBresenhamLine } from '../../algorithms/bresenham';
 import { calculateCirclePoints } from '../../algorithms/circle';
 import { calculateBezierCurve } from '../../algorithms/bezier';
 
-function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
+function Canvas({ points, parameters, selectedAlgorithm, drawnObjects, polygonToTransform, activeMenu }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -196,8 +196,28 @@ function Canvas({ points, parameters, selectedAlgorithm, drawnObjects }) {
       }
     });
 
+    if (activeMenu === 'TRANSFORMS' && polygonToTransform) {
+      const vertices = polygonToTransform;
+      
+      // Usa Bresenham para desenhar as arestas do polígono
+      if (vertices.length > 1) {
+        context.fillStyle = '#ff0000'; // Cor vermelha para destacar
+        
+        for (let i = 0; i < vertices.length; i++) {
+          const startPoint = vertices[i];
+          // Conecta o último ponto de volta ao primeiro para fechar o polígono
+          const endPoint = vertices[(i + 1) % vertices.length];
+          
+          const edgePixels = calculateBresenhamLine(startPoint, endPoint);
+          edgePixels.forEach(p => {
+            context.fillRect(p.x, p.y, 1, 1);
+          });
+        }
+      }
+    }
+
     context.restore();
-  }, [zoom, panOffset, points, canvasSize, parameters, selectedAlgorithm, displayObjects]);
+  }, [zoom, panOffset, points, canvasSize, parameters, selectedAlgorithm, displayObjects, activeMenu, polygonToTransform]);
 
   const handleMouseDown = (e) => {
     setIsPanning(true);
