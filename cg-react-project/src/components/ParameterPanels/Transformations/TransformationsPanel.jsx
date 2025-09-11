@@ -94,7 +94,7 @@ function TransformationsPanel({
       
       <hr />
       
-      <div className="param-group">
+      <div className="param-group button-container">
         <button onClick={onReset}>Resetar Posição do Polígono</button>
       </div>
     </div>

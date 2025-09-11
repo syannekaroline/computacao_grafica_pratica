@@ -100,7 +100,7 @@ export function rotate(vertices, angleDegrees, pivot) {
   return vertices.map(vertex => {
     const vertexVector = [vertex.x, vertex.y, 1];
     const transformedVector = multiplyMatrixVector(finalMatrix, vertexVector);
-    return { x: Math.round(transformedVector[0]), y: Math.round(transformedVector[1]) };
+    return { x: transformedVector[0], y: transformedVector[1] };
   });
 }
 
@@ -141,6 +141,6 @@ export function scale(vertices, sx, sy, fixedPoint) {
   return vertices.map(vertex => {
     const vertexVector = [vertex.x, vertex.y, 1];
     const transformedVector = multiplyMatrixVector(finalMatrix, vertexVector);
-    return { x: Math.round(transformedVector[0]), y: Math.round(transformedVector[1]) };
+    return { x: transformedVector[0], y: transformedVector[1] };
   });
 }

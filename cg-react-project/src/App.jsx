@@ -120,19 +120,42 @@ function App() {
 
   const handleApplyTranslate = () => {
     const { tx, ty } = parameters.transformations.translate;
-    const newVertices = translate(basePolygon, tx, ty);
+    const newVertices = translate(transformedPolygon, tx, ty);
     setTransformedPolygon(newVertices);
   };
   
   const handleApplyScale = () => {
     const { sx, sy, fixedX, fixedY } = parameters.transformations.scale;
-    const newVertices = scale(basePolygon, sx, sy, { x: fixedX, y: fixedY });
+
+    const fixedPoint = { x: fixedX, y: fixedY };
+
+    const isFixedPointVertex = transformedPolygon.some(
+      vertex => Math.round(vertex.x) === fixedPoint.x && Math.round(vertex.y) === fixedPoint.y
+    );
+
+    if (!isFixedPointVertex) {
+      alert('O ponto fixo escolhido deve ser um dos vértices do polígono!');
+      return; 
+    }
+
+    const newVertices = scale(transformedPolygon, sx, sy, { x: fixedX, y: fixedY });
     setTransformedPolygon(newVertices);
   };
 
   const handleApplyRotate = () => {
     const { angle, pivotX, pivotY } = parameters.transformations.rotate;
-    const newVertices = rotate(basePolygon, angle, { x: pivotX, y: pivotY });
+    const pivot = { x: pivotX, y: pivotY };
+
+    const isPivotVertex = transformedPolygon.some(
+      vertex => Math.round(vertex.x) === pivot.x && Math.round(vertex.y) === pivot.y
+    );
+
+    if (!isPivotVertex) {
+      alert('O pivô escolhido deve ser um dos vértices do polígono!');
+      return; 
+    }
+
+    const newVertices = rotate(transformedPolygon, angle, { x: pivotX, y: pivotY });
     setTransformedPolygon(newVertices);
   };
 
