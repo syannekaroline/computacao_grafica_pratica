@@ -8,6 +8,7 @@ import BezierPanel from '../ParameterPanels/Bezier/BezierPanel';
 import FloodFillPanel from '../ParameterPanels/FloodFill/FloodFillPanel';
 import ScanlineFillPanel from '../ParameterPanels/Scanline/ScanlineFillPanel';
 import { TransformationsPanel } from '../ParameterPanels/Transformations/TransformationsPanel';
+import CohenSutherlandPanel from '../ParameterPanels/CohenSutherland/CohenSutherlandPanel';
 
 
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
@@ -35,6 +36,9 @@ function SidebarPanel(props) {
     onApplyScale,
     onApplyRotate,
     onResetPolygon,
+    clipWindow,
+    setClipWindow,
+    onApplyClip,
     ...tableViewProps
   } = props;
 
@@ -85,6 +89,13 @@ function SidebarPanel(props) {
               <ScanlineFillPanel
                 onDrawAlgorithm={onDrawAlgorithm}
                 onMenuChange={onMenuChange}
+              />
+            )}
+            {selectedAlgorithm === 'cohenSutherland' && (
+              <CohenSutherlandPanel
+                clipWindow={clipWindow}
+                setClipWindow={setClipWindow}
+                onApplyClip={onApplyClip}
               />
             )}
           </div>

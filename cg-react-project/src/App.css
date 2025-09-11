@@ -32,3 +32,32 @@
   height: 100%;
   position: relative; /* Ajuda a posicionar o canvas corretamente */
 }
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  /* Ocupa 100% da altura da janela do navegador */
+  height: 100vh;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: row;
+  /* Faz esta seção crescer para ocupar o espaço restante abaixo do TopMenu */
+  flex-grow: 1;
+  /* Essencial: impede que o container principal tente rolar */
+  overflow: hidden;
+}
+
+.canvas-container {
+  flex-grow: 1;
+  position: relative;
+}
+
+.resizer {
+  flex-shrink: 0;
+  width: 5px;
+  background-color: #e0e0e0;
+  cursor: col-resize;
+  z-index: 10;
+}
