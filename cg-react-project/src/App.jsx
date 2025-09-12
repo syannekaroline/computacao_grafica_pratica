@@ -38,7 +38,6 @@ function App() {
   });
 
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
-  const [currentMode, setCurrentMode] = useState('SELECT');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('bresenham');
 
   const [sidebarWidth, setSidebarWidth] = useState(300);
@@ -365,7 +364,7 @@ function App() {
 
   return (
     <div className="app-container">
-      <TopMenu currentMode={currentMode} onModeChange={setCurrentMode} onReset={handleReset} />
+      <TopMenu onReset={handleReset} />
       <div className="main-content">
         <div style={{ width: `${sidebarWidth}px`, flexShrink: 0 }}>
           <Sidebar
