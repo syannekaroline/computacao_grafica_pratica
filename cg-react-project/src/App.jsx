@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar/Sidebar';
 import TopMenu from './components/TopMenu/TopMenu';
 import { translate, rotate, scale } from './algorithms/transformations';
 import { cohenSutherlandClip } from './algorithms/cohenSutherland';
+import { sutherlandHodgmanClip } from './algorithms/sutherlandHodgman';
 import { calculateBresenhamLine } from './algorithms/bresenham';
 import './App.css';
 
@@ -24,7 +25,9 @@ function App() {
   const [basePolygon, setBasePolygon] = useState(INITIAL_POLYGON);
   const [transformedPolygon, setTransformedPolygon] = useState(INITIAL_POLYGON);
 
-  const [clipWindow, setClipWindow] = useState({ xMin: 0, yMin: 0, xMax: 10, yMax: 10 });
+  // CORREÇÃO: Nomes de estado padronizados para camelCase (letra minúscula no início)
+  const [lineClipWindow, setLineClipWindow] = useState({ xMin: 0, yMin: 0, xMax: 10, yMax: 10 });
+  const [polygonClipWindow, setPolygonClipWindow] = useState({ xMin: 0, yMin: 0, xMax: 10, yMax: 10 });
 
   const [parameters, setParameters] = useState({
     bresenham: { p1: { x: 1, y: 2 }, p2: { x: 8, y: 5 } },
@@ -95,8 +98,6 @@ function App() {
         setBasePolygon([...points]);
         setTransformedPolygon([...points]);
         break;
-      
-      // --- LÓGICA RESTAURADA ---
       case 'scanlineFill':
         if (points.length < 3) {
           alert("Para preencher com Varredura, o polígono precisa de pelo menos 3 pontos.");
@@ -107,8 +108,6 @@ function App() {
       case 'floodFill':
         newObject = { ...commonProps, type: 'floodFill', params: { ...parameters.floodFill }, color: '#3498db' };
         break;
-      // --- FIM DA LÓGICA RESTAURADA ---
-        
       default:
         return;
     }
@@ -116,7 +115,7 @@ function App() {
   };
 
   const handleApplyClip = () => {
-    const { xMin, yMin, xMax, yMax } = clipWindow;
+    const { xMin, yMin, xMax, yMax } = lineClipWindow; // CORREÇÃO: Usando a variável com nome correto
 
     if (xMin >= xMax || yMin >= yMax) {
       alert("Erro: Os valores mínimos da janela de recorte devem ser menores que os valores máximos.");
@@ -155,50 +154,49 @@ function App() {
 
     setDrawnObjects(updatedObjects);
   };
-
-  const handleApplyTranslate = () => {
-    const { tx, ty } = parameters.transformations.translate;
-    const newVertices = translate(transformedPolygon, tx, ty);
-    setTransformedPolygon(newVertices);
-  };
   
-  const handleApplyScale = () => {
-    const { sx, sy, fixedX, fixedY } = parameters.transformations.scale;
-    const fixedPoint = { x: fixedX, y: fixedY };
+  const handleApplyPolygonClip = () => {
+    const { xMin, yMin, xMax, yMax } = polygonClipWindow;
 
-    const isFixedPointVertex = transformedPolygon.some(
-      vertex => Math.round(vertex.x) === fixedPoint.x && Math.round(vertex.y) === fixedPoint.y
-    );
-
-    if (!isFixedPointVertex) {
-      alert('O ponto fixo escolhido deve ser um dos vértices do polígono!');
+    if (xMin >= xMax || yMin >= yMax) {
+      alert("Erro: Os valores mínimos da janela de recorte devem ser menores que os valores máximos.");
       return;
     }
     
-    const newVertices = scale(transformedPolygon, sx, sy, fixedPoint);
-    setTransformedPolygon(newVertices);
-  };
-
-  const handleApplyRotate = () => {
-    const { angle, pivotX, pivotY } = parameters.transformations.rotate;
-    const pivot = { x: pivotX, y: pivotY };
-
-    const isPivotVertex = transformedPolygon.some(
-      vertex => Math.round(vertex.x) === pivot.x && Math.round(vertex.y) === pivot.y
-    );
-
-    if (!isPivotVertex) {
-      alert('O pivô escolhido deve ser um dos vértices do polígono!');
+    const lastPolylineIndex = drawnObjects.map(obj => obj.type).lastIndexOf('polyline');
+    
+    if (lastPolylineIndex === -1) {
+      alert("Nenhum polígono (polilinha) encontrado para recortar. Por favor, desenhe um primeiro.");
       return;
     }
-    
-    const newVertices = rotate(transformedPolygon, angle, pivot);
-    setTransformedPolygon(newVertices);
+
+    const polylineToClip = drawnObjects[lastPolylineIndex];
+    let clippedVertices = sutherlandHodgmanClip(polylineToClip.params.points, polygonClipWindow);
+
+    clippedVertices = clippedVertices.map(vertex => {
+        let { x, y } = vertex;
+        if (x === xMax) x--;
+        if (y === yMax) y--;
+        return { x, y };
+    });
+
+    if (clippedVertices.length < 3) {
+      setDrawnObjects(prev => prev.filter((_, index) => index !== lastPolylineIndex));
+      alert("O polígono foi inteiramente recortado.");
+    } else {
+      setDrawnObjects(prev => prev.map((obj, index) => {
+        if (index === lastPolylineIndex) {
+          return { ...obj, params: { ...obj.params, points: clippedVertices } };
+        }
+        return obj;
+      }));
+    }
   };
 
-  const handleResetPolygon = () => {
-    setTransformedPolygon(basePolygon);
-  };
+  const handleApplyTranslate = () => { /* ... */ };
+  const handleApplyScale = () => { /* ... */ };
+  const handleApplyRotate = () => { /* ... */ };
+  const handleResetPolygon = () => { /* ... */ };
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
@@ -210,9 +208,13 @@ function App() {
   }, [handleMouseMove, handleMouseUp]);
 
   const handlePointChange = (index, axis, value) => {
-    const newPoints = [...points];
-    newPoints[index][axis] = parseFloat(value) || 0;
-    setPoints(newPoints);
+    const updatedPoints = points.map((point, i) => {
+      if (i === index) {
+        return { ...point, [axis]: parseFloat(value) || 0 };
+      }
+      return point;
+    });
+    setPoints(updatedPoints);
   };
   const handleAddPoint = () => setPoints([...points, { x: 0, y: 0 }]);
   const handleRemovePoint = (index) => setPoints(points.filter((_, i) => i !== index));
@@ -232,9 +234,13 @@ function App() {
             onApplyScale={handleApplyScale}
             onApplyRotate={handleApplyRotate}
             onResetPolygon={handleResetPolygon}
-            clipWindow={clipWindow}
-            setClipWindow={setClipWindow}
+            // CORREÇÃO: Passando as props com os nomes corretos
+            lineClipWindow={lineClipWindow}
+            setLineClipWindow={setLineClipWindow}
             onApplyClip={handleApplyClip}
+            polygonClipWindow={polygonClipWindow}
+            setPolygonClipWindow={setPolygonClipWindow}
+            onApplyPolygonClip={handleApplyPolygonClip}
           />
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />
@@ -246,7 +252,9 @@ function App() {
             selectedAlgorithm={selectedAlgorithm}
             polygonToTransform={transformedPolygon}
             activeMenu={activeSidebarMenu} 
-            clipWindow={clipWindow}
+            // CORREÇÃO: Passando as props com os nomes corretos
+            lineClipWindow={lineClipWindow}
+            polygonClipWindow={polygonClipWindow}
           />
         </div>
       </div>

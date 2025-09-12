@@ -25,17 +25,16 @@ function Canvas({
   drawnObjects,
   polygonToTransform,
   activeMenu,
-  clipWindow
+  lineClipWindow,
+  polygonClipWindow 
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-
   const [zoom, setZoom] = useState(20);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
-  
   const [displayObjects, setDisplayObjects] = useState([]);
 
   useEffect(() => {
@@ -55,14 +54,11 @@ function Canvas({
   }, []);
 
   useEffect(() => {
-    // Passo 1: Processa todos os objetos, exceto o Flood Fill.
     let processedObjects = drawnObjects.map(obj => {
-      if (obj.type === 'floodFill') return obj; // Pula o Flood Fill por enquanto
-
-      if (obj.pixels && obj.type === 'bresenham') { // Usa pixels pré-calculados do Bresenham
+      if (obj.type === 'floodFill') return obj;
+      if (obj.pixels && obj.type === 'bresenham') {
         return obj;
       }
-
       let allPoints = [];
       if (obj.type === 'bresenham') {
           allPoints = calculateBresenhamLine(obj.params.p1, obj.params.p2);
@@ -86,7 +82,6 @@ function Canvas({
       return { ...obj, pixels: allPoints };
     });
 
-    // Passo 2: Agora processa os objetos Flood Fill, usando os outros como fronteira.
     processedObjects = processedObjects.map(obj => {
       if (obj.type === 'floodFill') {
         const boundaryObjects = processedObjects.filter(d => d.id !== obj.id && d.pixels && d.pixels.length > 0);
@@ -103,7 +98,6 @@ function Canvas({
         });
 
         minX -= 2; minY -= 2; maxX += 2; maxY += 2;
-
         const width = maxX - minX + 1;
         const height = maxY - minY + 1;
 
@@ -123,10 +117,7 @@ function Canvas({
         
         const imageData = ctx.getImageData(0, 0, width, height);
         const seed = obj.params.seed;
-        const translatedSeed = {
-            x: Math.round(seed.x - minX),
-            y: Math.round(seed.y - minY)
-        };
+        const translatedSeed = { x: Math.round(seed.x - minX), y: Math.round(seed.y - minY) };
         const fillColorRgba = hexToRgba(obj.color);
         const boundaryColorRgba = [0, 0, 0, 255];
         const pointsToFill = calculateFloodFill(translatedSeed, imageData, fillColorRgba, boundaryColorRgba);
@@ -142,7 +133,6 @@ function Canvas({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas.width || !canvas.height) return;
-
     const context = canvas.getContext('2d');
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
@@ -205,25 +195,27 @@ function Canvas({
       context.fillRect(point.x, point.y, 1, 1);
     });
 
-    if (selectedAlgorithm === 'bresenham' && parameters.bresenham) {
-      const { p1, p2 } = parameters.bresenham;
-      context.fillStyle = '#000000';
-      context.fillRect(p1.x, p1.y, 1, 1);
-      context.fillRect(p2.x, p2.y, 1, 1);
-    }
-    if (selectedAlgorithm === 'circle' && parameters.circle && parameters.circle.center) {
-      const { center } = parameters.circle;
-      context.fillStyle = '#000000';
-      context.fillRect(center.x, center.y, 1, 1);
-    }
-    if (selectedAlgorithm === 'bezier' && parameters.bezier) {
-      const { p0, p1, p2, p3 } = parameters.bezier;
-      context.fillStyle = '#000000';
-      context.fillRect(p0.x, p0.y, 1, 1);
-      context.fillRect(p3.x, p3.y, 1, 1);
-      context.fillStyle = '#FF0000';
-      context.fillRect(p1.x, p1.y, 1, 1);
-      context.fillRect(p2.x, p2.y, 1, 1);
+    if (activeMenu === 'ALGORITHMS') {
+        if (selectedAlgorithm === 'bresenham' && parameters.bresenham) {
+          const { p1, p2 } = parameters.bresenham;
+          context.fillStyle = '#000000';
+          context.fillRect(p1.x, p1.y, 1, 1);
+          context.fillRect(p2.x, p2.y, 1, 1);
+        }
+        if (selectedAlgorithm === 'circle' && parameters.circle && parameters.circle.center) {
+          const { center } = parameters.circle;
+          context.fillStyle = '#000000';
+          context.fillRect(center.x, center.y, 1, 1);
+        }
+        if (selectedAlgorithm === 'bezier' && parameters.bezier) {
+          const { p0, p1, p2, p3 } = parameters.bezier;
+          context.fillStyle = '#000000';
+          context.fillRect(p0.x, p0.y, 1, 1);
+          context.fillRect(p3.x, p3.y, 1, 1);
+          context.fillStyle = '#FF0000';
+          context.fillRect(p1.x, p1.y, 1, 1);
+          context.fillRect(p2.x, p2.y, 1, 1);
+        }
     }
     
     displayObjects.forEach(obj => {
@@ -250,15 +242,22 @@ function Canvas({
       }
     }
     
+    let clipWindowToDraw = null;
     if (selectedAlgorithm === 'cohenSutherland') {
-        const { xMin, yMin, xMax, yMax } = clipWindow;
+      clipWindowToDraw = lineClipWindow;
+    } else if (selectedAlgorithm === 'sutherlandHodgman') {
+      clipWindowToDraw = polygonClipWindow;
+    }
+
+    if (clipWindowToDraw) {
+        const { xMin, yMin, xMax, yMax } = clipWindowToDraw;
         context.strokeStyle = 'rgba(231, 76, 60, 0.8)';
         context.lineWidth = 1.5 / zoom;
         context.strokeRect(xMin, yMin, xMax - xMin, yMax - yMin);
     }
 
     context.restore();
-  }, [zoom, panOffset, canvasSize, displayObjects, activeMenu, polygonToTransform, clipWindow, points, selectedAlgorithm, parameters]);
+  }, [zoom, panOffset, canvasSize, displayObjects, activeMenu, polygonToTransform, lineClipWindow, polygonClipWindow, points, selectedAlgorithm, parameters]);
 
   const handleMouseDown = (e) => {
     setIsPanning(true);

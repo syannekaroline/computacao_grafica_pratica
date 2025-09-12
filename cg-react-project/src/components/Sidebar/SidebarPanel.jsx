@@ -9,6 +9,7 @@ import FloodFillPanel from '../ParameterPanels/FloodFill/FloodFillPanel';
 import ScanlineFillPanel from '../ParameterPanels/Scanline/ScanlineFillPanel';
 import { TransformationsPanel } from '../ParameterPanels/Transformations/TransformationsPanel';
 import CohenSutherlandPanel from '../ParameterPanels/CohenSutherland/CohenSutherlandPanel';
+import SutherlandHodgmanPanel from '../ParameterPanels/SutherlandHodgman/SutherlandHodgmanPanel';
 
 
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
@@ -36,9 +37,12 @@ function SidebarPanel(props) {
     onApplyScale,
     onApplyRotate,
     onResetPolygon,
-    clipWindow,
-    setClipWindow,
+    lineClipWindow,
+    setLineClipWindow,
     onApplyClip,
+    polygonClipWindow,
+    setPolygonClipWindow,
+    onApplyPolygonClip,
     ...tableViewProps
   } = props;
 
@@ -93,9 +97,16 @@ function SidebarPanel(props) {
             )}
             {selectedAlgorithm === 'cohenSutherland' && (
               <CohenSutherlandPanel
-                clipWindow={clipWindow}
-                setClipWindow={setClipWindow}
+                clipWindow={lineClipWindow}
+                setClipWindow={setLineClipWindow}
                 onApplyClip={onApplyClip}
+              />
+            )}
+            {selectedAlgorithm === 'sutherlandHodgman' && (
+              <SutherlandHodgmanPanel
+                clipWindow={polygonClipWindow}
+                setClipWindow={setPolygonClipWindow}
+                onApplyPolygonClip={onApplyPolygonClip}
               />
             )}
           </div>
