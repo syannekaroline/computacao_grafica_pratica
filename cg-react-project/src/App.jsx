@@ -55,7 +55,8 @@ function App() {
       translate: { tx: 5, ty: 5 },
       scale: { sx: 1.2, sy: 1.2, fixedX: 10, fixedY: 10 },
       rotate: { angle: 30, pivotX: 10, pivotY: 10 },
-    }
+    },
+    ellipse: { center: { x: 20, y: 20 }, radiusA: 15, radiusB: 10 }
   });
 
   const handleParameterChange = (algorithm, paramName, value) => {
@@ -117,6 +118,9 @@ function App() {
         break;
       case 'floodFill':
         newObject = { ...commonProps, type: 'floodFill', params: { ...parameters.floodFill }, color: '#3498db' };
+        break;
+      case 'ellipse':
+        newObject = { ...commonProps, type: 'ellipse', params: { ...parameters.ellipse }, color: '#f39c12' };
         break;
       default:
         return;

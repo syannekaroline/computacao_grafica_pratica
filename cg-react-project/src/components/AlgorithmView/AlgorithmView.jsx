@@ -10,7 +10,8 @@ const algorithms = [
   { id: 'scanlineFill', name: 'Preenchimento por Varredura' },
   { id: 'cohenSutherland', name: 'Recorte de Linha' },
   { id: 'sutherlandHodgman', name: 'Recorte de Polígono' },
-  { id: 'projections', name: 'Projeções 3D' }
+  { id: 'projections', name: 'Projeções 3D' },
+  { id: 'ellipse', name: 'Elipse' }
 ];
 
 function AlgorithmView({ selectedAlgorithm, onSelectAlgorithm }) {

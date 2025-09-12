@@ -12,6 +12,7 @@ import CohenSutherlandPanel from '../ParameterPanels/CohenSutherland/CohenSuther
 import SutherlandHodgmanPanel from '../ParameterPanels/SutherlandHodgman/SutherlandHodgmanPanel';
 import ProjectionsPanel from '../ParameterPanels/Projections/ProjectionsPanel';
 import TableView3D from '../TableView/TableView3D';
+import EllipsePanel from '../ParameterPanels/Ellipse/EllipsePanel';
 
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
     return (
@@ -135,6 +136,13 @@ function SidebarPanel(props) {
                   onRemoveVertex={onRemoveVertex}
                 />
               </>
+            )}
+            {selectedAlgorithm === 'ellipse' && (
+              <EllipsePanel
+                parameters={parameters.ellipse}
+                onParameterChange={(param, value) => onParameterChange('ellipse', param, value)}
+                onDrawAlgorithm={onDrawAlgorithm}
+              />
             )}
           </div>
         </>
