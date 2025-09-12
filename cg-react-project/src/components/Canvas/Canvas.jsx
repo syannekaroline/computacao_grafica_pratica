@@ -5,6 +5,7 @@ import { calculateCirclePoints } from '../../algorithms/circle';
 import { calculateBezierCurve } from '../../algorithms/bezier';
 import { calculateScanlineFill } from '../../algorithms/scanlineFill';
 import { calculateFloodFill } from '../../algorithms/floodFill';
+import { calculateEllipsePoints } from '../../algorithms/ellipse';
 
 const hexToRgba = (hex) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -85,6 +86,8 @@ function Canvas({
           }
       } else if (obj.type === 'scanlineFill') {
           allPoints = calculateScanlineFill(obj.params.points);
+      } else if (obj.type === 'ellipse') {
+          allPoints = calculateEllipsePoints(obj.params.center, obj.params.radiusA, obj.params.radiusB);
       }
       return { ...obj, pixels: allPoints };
     });
@@ -222,6 +225,11 @@ function Canvas({
           context.fillStyle = '#FF0000';
           context.fillRect(p1.x, p1.y, 1, 1);
           context.fillRect(p2.x, p2.y, 1, 1);
+        }
+        if (selectedAlgorithm === 'ellipse' && parameters.ellipse) {
+          const { center } = parameters.ellipse;
+          context.fillStyle = '#000000';
+          context.fillRect(center.x, center.y, 1, 1);
         }
     }
     
