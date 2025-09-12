@@ -2,14 +2,10 @@
 name: Deploy static content to Pages
 
 on:
-  # Runs on pushes targeting the default branch
   push:
-    branches: ['main'] # ou 'master', dependendo do seu branch principal
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: ['main']
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -33,25 +29,28 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-          cache-dependency-path: 'cg-react-project/package-lock.json' # Aponta para o package-lock correto
+          cache-dependency-path: 'cg-react-project/package-lock.json'
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./cg-react-project # Define o diretório de trabalho
+        working-directory: ./cg-react-project
 
       - name: Build
-        run: npm run build
-        working-directory: ./cg-react-project # Define o diretório de trabalho
+        # Adiciona a flag --base dinamicamente durante o build
+        run: npm run build -- --base=/${{ github.event.repository.name }}/
+        working-directory: ./cg-react-project
+
+      # --- PASSO ADICIONADO PARA CORRIGIR O ERRO 404/MIME TYPE ---
+      - name: Create 404.html for SPA Fallback
+        run: cp dist/index.html dist/404.html
+        working-directory: ./cg-react-project
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Aponta para a pasta 'dist' DENTRO do seu projeto
           path: './cg-react-project/dist'
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
