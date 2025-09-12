@@ -15,14 +15,11 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
 concurrency:
   group: 'pages'
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
   deploy:
     environment:
       name: github-pages
@@ -34,19 +31,27 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18 # Use uma versão LTS do Node
+          node-version: 18
           cache: 'npm'
+          cache-dependency-path: 'cg-react-project/package-lock.json' # Aponta para o package-lock correto
+
       - name: Install dependencies
         run: npm install
+        working-directory: ./cg-react-project # Define o diretório de trabalho
+
       - name: Build
-        run: npm run build -- --base=/${{ github.event.repository.name }}/ # Configura o 'base' dinamicamente
+        run: npm run build
+        working-directory: ./cg-react-project # Define o diretório de trabalho
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload a pasta 'dist' que o Vite cria
-          path: './dist'
+          # Aponta para a pasta 'dist' DENTRO do seu projeto
+          path: './cg-react-project/dist'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

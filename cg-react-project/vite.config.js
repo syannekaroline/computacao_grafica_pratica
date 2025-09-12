@@ -4,6 +4,5 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // ADICIONE A LINHA ABAIXO
-  base: 'computacao_grafica_pratica', 
+  base: '/computacao-grafica-pratica/', // Garanta que este é o nome do seu repositório
 })
