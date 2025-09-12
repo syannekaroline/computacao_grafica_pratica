@@ -11,7 +11,6 @@ import { TransformationsPanel } from '../ParameterPanels/Transformations/Transfo
 import CohenSutherlandPanel from '../ParameterPanels/CohenSutherland/CohenSutherlandPanel';
 import SutherlandHodgmanPanel from '../ParameterPanels/SutherlandHodgman/SutherlandHodgmanPanel';
 
-
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
     return (
         <div className="param-panel-container">
@@ -37,6 +36,7 @@ function SidebarPanel(props) {
     onApplyScale,
     onApplyRotate,
     onResetPolygon,
+    // CORREÇÃO: Recebendo as props com os nomes corretos
     lineClipWindow,
     setLineClipWindow,
     onApplyClip,
@@ -112,7 +112,6 @@ function SidebarPanel(props) {
           </div>
         </>
       )}
-
       {activeMenu === 'TRANSFORMS' && (
         <div className="parameter-area">
           <TransformationsPanel
@@ -125,7 +124,6 @@ function SidebarPanel(props) {
           />
         </div>
       )}
-
       {activeMenu === 'TABLE' && (
         <TableView {...tableViewProps} />
       )}

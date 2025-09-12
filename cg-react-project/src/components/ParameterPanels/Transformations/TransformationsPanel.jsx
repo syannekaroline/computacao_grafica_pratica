@@ -37,7 +37,7 @@ function TransformationsPanel({
           </div>
         </div>
         <div className="button-container">
-          <button onClick={onTranslate}>Aplicar Translação</button>
+          <button className='run-button' onClick={onTranslate}>Aplicar Translação</button>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ function TransformationsPanel({
           </div>
         </div>
         <div className="button-container">
-          <button onClick={onScale}>Aplicar Escala</button>
+          <button className='run-button' onClick={onScale}>Aplicar Escala</button>
         </div>
       </div>
       
@@ -88,14 +88,14 @@ function TransformationsPanel({
           </div>
         </div>
         <div className="button-container">
-          <button onClick={onRotate}>Aplicar Rotação</button>
+          <button className='run-button' onClick={onRotate}>Aplicar Rotação</button>
         </div>
       </div>
       
       <hr />
       
       <div className="param-group button-container">
-        <button onClick={onReset}>Resetar Posição do Polígono</button>
+        <button className='run-button' onClick={onReset}>Resetar Posição do Polígono</button>
       </div>
     </div>
   );

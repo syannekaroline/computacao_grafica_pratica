@@ -23,7 +23,6 @@ function Canvas({
   parameters,
   selectedAlgorithm,
   drawnObjects,
-  polygonToTransform,
   activeMenu,
   lineClipWindow,
   polygonClipWindow 
@@ -220,27 +219,12 @@ function Canvas({
     
     displayObjects.forEach(obj => {
       if (obj.pixels) {
-        context.fillStyle = obj.color;
+        context.fillStyle = (obj.type === 'polyline' && activeMenu === 'TRANSFORMS') ? '#ff0000' : obj.color;
         obj.pixels.forEach(point => {
           context.fillRect(point.x, point.y, 1, 1);
         });
       }
     });
-
-    if (activeMenu === 'TRANSFORMS' && polygonToTransform) {
-      const vertices = polygonToTransform;
-      if (vertices.length > 1) {
-        context.fillStyle = '#ff0000';
-        for (let i = 0; i < vertices.length; i++) {
-          const startPoint = vertices[i];
-          const endPoint = vertices[(i + 1) % vertices.length];
-          const edgePixels = calculateBresenhamLine(startPoint, endPoint);
-          edgePixels.forEach(p => {
-            context.fillRect(p.x, p.y, 1, 1);
-          });
-        }
-      }
-    }
     
     let clipWindowToDraw = null;
     if (selectedAlgorithm === 'cohenSutherland') {
@@ -257,7 +241,7 @@ function Canvas({
     }
 
     context.restore();
-  }, [zoom, panOffset, canvasSize, displayObjects, activeMenu, polygonToTransform, lineClipWindow, polygonClipWindow, points, selectedAlgorithm, parameters]);
+  }, [zoom, panOffset, canvasSize, displayObjects, activeMenu, lineClipWindow, polygonClipWindow, points, selectedAlgorithm, parameters]);
 
   const handleMouseDown = (e) => {
     setIsPanning(true);
