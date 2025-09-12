@@ -8,10 +8,6 @@ import { sutherlandHodgmanClip } from './algorithms/sutherlandHodgman';
 import { calculateBresenhamLine } from './algorithms/bresenham';
 import './App.css';
 
-const INITIAL_POLYGON = [
-  { x: 10, y: 10 }, { x: 15, y: 15 }, { x: 10, y: 20 }, { x: 5, y: 15 }
-];
-
 function App() {
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
   const [currentMode, setCurrentMode] = useState('SELECT');
@@ -22,10 +18,6 @@ function App() {
   const [drawnObjects, setDrawnObjects] = useState([]);
   const [points, setPoints] = useState([]);
 
-  const [basePolygon, setBasePolygon] = useState(INITIAL_POLYGON);
-  const [transformedPolygon, setTransformedPolygon] = useState(INITIAL_POLYGON);
-
-  // CORREÇÃO: Nomes de estado padronizados para camelCase (letra minúscula no início)
   const [lineClipWindow, setLineClipWindow] = useState({ xMin: 0, yMin: 0, xMax: 10, yMax: 10 });
   const [polygonClipWindow, setPolygonClipWindow] = useState({ xMin: 0, yMin: 0, xMax: 10, yMax: 10 });
 
@@ -61,8 +53,6 @@ function App() {
   const handleReset = () => {
     setDrawnObjects([]);
     setPoints([]);
-    setBasePolygon(INITIAL_POLYGON);
-    setTransformedPolygon(INITIAL_POLYGON);
   };
 
   const handleMouseDown = (e) => { e.preventDefault(); isResizingRef.current = true; };
@@ -94,9 +84,7 @@ function App() {
           alert("Para desenhar um polígono, adicione pelo menos 2 pontos na Tabela de Pontos.");
           return;
         }
-        newObject = { ...commonProps, type: 'polyline', params: { points: [...points] }, color: '#000000' };
-        setBasePolygon([...points]);
-        setTransformedPolygon([...points]);
+        newObject = { ...commonProps, type: 'polyline', params: { points: [...points] }, originalPoints: [...points], color: '#000000' };
         break;
       case 'scanlineFill':
         if (points.length < 3) {
@@ -111,11 +99,13 @@ function App() {
       default:
         return;
     }
-    setDrawnObjects(prev => [...prev, newObject]);
+    if (newObject) {
+      setDrawnObjects(prev => [...prev, newObject]);
+    }
   };
 
   const handleApplyClip = () => {
-    const { xMin, yMin, xMax, yMax } = lineClipWindow; // CORREÇÃO: Usando a variável com nome correto
+    const { xMin, yMin, xMax, yMax } = lineClipWindow;
 
     if (xMin >= xMax || yMin >= yMax) {
       alert("Erro: Os valores mínimos da janela de recorte devem ser menores que os valores máximos.");
@@ -193,10 +183,83 @@ function App() {
     }
   };
 
-  const handleApplyTranslate = () => { /* ... */ };
-  const handleApplyScale = () => { /* ... */ };
-  const handleApplyRotate = () => { /* ... */ };
-  const handleResetPolygon = () => { /* ... */ };
+  const findLastPolyline = () => {
+    const lastPolylineIndex = drawnObjects.map(obj => obj.type).lastIndexOf('polyline');
+    if (lastPolylineIndex === -1) {
+      alert("Nenhum polígono (polilinha) encontrado para transformar. Por favor, desenhe um primeiro.");
+      return { polyline: null, index: -1 };
+    }
+    return { polyline: drawnObjects[lastPolylineIndex], index: lastPolylineIndex };
+  };
+  
+  const handleApplyTranslate = () => {
+    const { polyline, index } = findLastPolyline();
+    if (!polyline) return;
+    
+    const { tx, ty } = parameters.transformations.translate;
+    const newVertices = translate(polyline.params.points, tx, ty);
+    
+    setDrawnObjects(prev => prev.map((obj, i) => 
+      i === index ? { ...obj, params: { ...obj.params, points: newVertices } } : obj
+    ));
+  };
+  
+  const handleApplyScale = () => {
+    const { polyline, index } = findLastPolyline();
+    if (!polyline) return;
+
+    const { sx, sy, fixedX, fixedY } = parameters.transformations.scale;
+    const fixedPoint = { x: fixedX, y: fixedY };
+
+    // Adiciona a validação para garantir que o ponto fixo é um dos vértices atuais
+    const isVertex = polyline.params.points.some(
+      vertex => vertex.x === fixedPoint.x && vertex.y === fixedPoint.y
+    );
+
+    if (!isVertex) {
+      alert('O ponto fixo deve ser um dos vértices do polígono atual.');
+      return;
+    }
+
+    const newVertices = scale(polyline.params.points, sx, sy, fixedPoint);
+
+    setDrawnObjects(prev => prev.map((obj, i) => 
+      i === index ? { ...obj, params: { ...obj.params, points: newVertices } } : obj
+    ));
+  };
+
+  const handleApplyRotate = () => {
+    const { polyline, index } = findLastPolyline();
+    if (!polyline) return;
+
+    const { angle, pivotX, pivotY } = parameters.transformations.rotate;
+    const pivot = { x: pivotX, y: pivotY };
+
+    // Adiciona a validação para garantir que o pivô é um dos vértices atuais
+    const isVertex = polyline.params.points.some(
+      vertex => vertex.x === pivot.x && vertex.y === pivot.y
+    );
+
+    if (!isVertex) {
+      alert('O pivô deve ser um dos vértices do polígono atual.');
+      return;
+    }
+    
+    const newVertices = rotate(polyline.params.points, angle, pivot);
+    
+    setDrawnObjects(prev => prev.map((obj, i) => 
+      i === index ? { ...obj, params: { ...obj.params, points: newVertices } } : obj
+    ));
+  };
+
+  const handleResetPolygon = () => {
+    const { polyline, index } = findLastPolyline();
+    if (!polyline) return;
+    
+    setDrawnObjects(prev => prev.map((obj, i) => 
+      i === index ? { ...obj, params: { ...obj.params, points: obj.originalPoints } } : obj
+    ));
+  };
 
   useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
@@ -234,7 +297,6 @@ function App() {
             onApplyScale={handleApplyScale}
             onApplyRotate={handleApplyRotate}
             onResetPolygon={handleResetPolygon}
-            // CORREÇÃO: Passando as props com os nomes corretos
             lineClipWindow={lineClipWindow}
             setLineClipWindow={setLineClipWindow}
             onApplyClip={handleApplyClip}
@@ -250,9 +312,7 @@ function App() {
             points={points}
             parameters={parameters}
             selectedAlgorithm={selectedAlgorithm}
-            polygonToTransform={transformedPolygon}
             activeMenu={activeSidebarMenu} 
-            // CORREÇÃO: Passando as props com os nomes corretos
             lineClipWindow={lineClipWindow}
             polygonClipWindow={polygonClipWindow}
           />
