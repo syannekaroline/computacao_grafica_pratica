@@ -44,29 +44,18 @@ O projeto inclui a implementação dos seguintes algoritmos e técnicas:
 
 O projeto está organizado da seguinte forma para facilitar a manutenção e escalabilidade:
 
-computacao-grafica-pratica/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml      # Workflow para deploy automático no GitHub Pages
-└── cg-react-project/       # Raiz do projeto React
-├── public/
-├── src/
-│   ├── algorithms/     # lógica de cada algoritmo
-│   ├── assets/
-│   ├── components/     # Componentes React reutilizáveis (Canvas, Sidebar, Painéis)
-│   │   ├── AlgorithmView/
-│   │   ├── Canvas/
-│   │   ├── icons/
-│   │   ├── ParameterPanels/ # Painéis de controle para cada algoritmo
-│   │   ├── Sidebar/
-│   │   ├── TableView/      # Tabelas de pontos 2D, vértices 3D e arestas
-│   │   └── TopMenu/
-│   ├── App.jsx           # Componente principal que gerencia o estado global
-│   ├── App.css
-│   └── main.jsx          # Ponto de entrada da aplicação
-├── index.html
-├── package.json
-└── vite.config.js
+O projeto está organizado da seguinte forma para facilitar a manutenção e escalabilidade:
+
+| Pasta / Arquivo | Descrição |
+|---|---|
+| `/.github/workflows/` | Contém o workflow do GitHub Actions para deploy automático no GitHub Pages. |
+| `/cg-react-project/src/` | Pasta principal que contém todo o código-fonte da aplicação React. |
+| `/cg-react-project/src/algorithms/` | Onde a lógica de cada algoritmo de computação gráfica (Bresenham, Projeções, etc.) é implementada. |
+| `/cg-react-project/src/components/` | Contém todos os componentes React reutilizáveis que formam a interface (Canvas, Sidebar, etc.). |
+| `.../components/ParameterPanels/` | Subpasta com os painéis de controle específicos para cada algoritmo, onde o usuário insere os parâmetros. |
+| `.../components/TableView/` | Contém os componentes de tabela para a entrada de pontos 2D, vértices 3D e arestas. |
+| `/cg-react-project/src/App.jsx` | O componente principal da aplicação, responsável por gerenciar o estado global e a interação. |
+| `/cg-react-project/vite.config.js` | Arquivo de configuração do Vite, usado para definir o caminho base para o deploy no GitHub Pages. |
 
 ---
 
