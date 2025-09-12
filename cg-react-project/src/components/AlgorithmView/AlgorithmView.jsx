@@ -9,7 +9,8 @@ const algorithms = [
   { id: 'floodFill', name: 'Preenchimento Recursivo' },
   { id: 'scanlineFill', name: 'Preenchimento por Varredura' },
   { id: 'cohenSutherland', name: 'Recorte de Linha' },
-  { id: 'sutherlandHodgman', name: 'Recorte de Polígono' }
+  { id: 'sutherlandHodgman', name: 'Recorte de Polígono' },
+  { id: 'projections', name: 'Projeções 3D' }
 ];
 
 function AlgorithmView({ selectedAlgorithm, onSelectAlgorithm }) {

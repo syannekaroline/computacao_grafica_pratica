@@ -6,9 +6,31 @@ import { translate, rotate, scale } from './algorithms/transformations';
 import { cohenSutherlandClip } from './algorithms/cohenSutherland';
 import { sutherlandHodgmanClip } from './algorithms/sutherlandHodgman';
 import { calculateBresenhamLine } from './algorithms/bresenham';
+import { projectVertices } from './algorithms/projections';
 import './App.css';
 
+
+// Vértices de um cubo como estado inicial
+const CUBE_VERTICES = [
+  { x: 10, y: 10, z: 10 }, { x: 30, y: 10, z: 10 },
+  { x: 30, y: 30, z: 10 }, { x: 10, y: 30, z: 10 },
+  { x: 10, y: 10, z: 30 }, { x: 30, y: 10, z: 30 },
+  { x: 30, y: 30, z: 30 }, { x: 10, y: 30, z: 30 },
+];
+
+// Arestas que conectam os vértices do cubo (usando os índices do array acima)
+const CUBE_EDGES = [
+  [0, 1], [1, 2], [2, 3], [3, 0], // Face frontal
+  [4, 5], [5, 6], [6, 7], [7, 4], // Face traseira
+  [0, 4], [1, 5], [2, 6], [3, 7]  // Arestas de conexão
+];
+
 function App() {
+  const [vertices3D, setVertices3D] = useState(CUBE_VERTICES);
+  const [edges3D, setEdges3D] = useState(CUBE_EDGES); // Por enquanto, fixo para um cubo
+  const [projectionType, setProjectionType] = useState('cavalier');
+  const [projectionParams, setProjectionParams] = useState({ angle: 45, d: 20 });
+
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
   const [currentMode, setCurrentMode] = useState('SELECT');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('bresenham');
@@ -282,6 +304,40 @@ function App() {
   const handleAddPoint = () => setPoints([...points, { x: 0, y: 0 }]);
   const handleRemovePoint = (index) => setPoints(points.filter((_, i) => i !== index));
 
+   // NOVA FUNÇÃO PARA EXECUTAR A PROJEÇÃO
+  const handleProject = () => {
+    // Translada o objeto para longe no eixo Z para um melhor efeito de perspectiva
+    const objToProject = vertices3D.map(v => ({
+      x: v.x - 20, // Centraliza em X
+      y: v.y - 20, // Centraliza em Y
+      z: projectionType === 'perspective' ? v.z + 50 : v.z // Empurra para longe em Z na perspectiva
+    }));
+    
+    const projectedPoints = projectVertices(objToProject, projectionType, projectionParams);
+    
+    const newObject = {
+      id: `projection-${Date.now()}`,
+      type: 'projection',
+      color: '#0e7490',
+      projectedPoints: projectedPoints,
+      edges: edges3D,
+    };
+    setDrawnObjects(prev => [...prev.filter(o => o.type !== 'projection'), newObject]);
+  };
+
+  // NOVOS HANDLERS PARA A TABELA 3D E PAINEL DE PROJEÇÃO
+  const handleVertex3DChange = (index, axis, value) => {
+    const updatedVertices = vertices3D.map((v, i) => 
+      i === index ? { ...v, [axis]: parseFloat(value) || 0 } : v
+    );
+    setVertices3D(updatedVertices);
+  };
+  const handleAddVertex3D = () => setVertices3D([...vertices3D, { x: 0, y: 0, z: 0 }]);
+  const handleRemoveVertex3D = (index) => setVertices3D(vertices3D.filter((_, i) => i !== index));
+  const handleProjectionParamsChange = (param, value) => {
+    setProjectionParams(prev => ({...prev, [param]: parseFloat(value)}));
+  };
+
   return (
     <div className="app-container">
       <TopMenu currentMode={currentMode} onModeChange={setCurrentMode} onReset={handleReset} />
@@ -303,6 +359,15 @@ function App() {
             polygonClipWindow={polygonClipWindow}
             setPolygonClipWindow={setPolygonClipWindow}
             onApplyPolygonClip={handleApplyPolygonClip}
+            vertices3D={vertices3D}
+            onVertexChange={handleVertex3DChange}
+            onAddVertex={handleAddVertex3D}
+            onRemoveVertex={handleRemoveVertex3D}
+            projectionType={projectionType}
+            projectionParams={projectionParams}
+            onProjectionTypeChange={setProjectionType}
+            onProjectionParamsChange={handleProjectionParamsChange}
+            onProject={handleProject}
           />
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />

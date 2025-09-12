@@ -10,6 +10,8 @@ import ScanlineFillPanel from '../ParameterPanels/Scanline/ScanlineFillPanel';
 import { TransformationsPanel } from '../ParameterPanels/Transformations/TransformationsPanel';
 import CohenSutherlandPanel from '../ParameterPanels/CohenSutherland/CohenSutherlandPanel';
 import SutherlandHodgmanPanel from '../ParameterPanels/SutherlandHodgman/SutherlandHodgmanPanel';
+import ProjectionsPanel from '../ParameterPanels/Projections/ProjectionsPanel';
+import TableView3D from '../TableView/TableView3D';
 
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
     return (
@@ -36,13 +38,21 @@ function SidebarPanel(props) {
     onApplyScale,
     onApplyRotate,
     onResetPolygon,
-    // CORREÇÃO: Recebendo as props com os nomes corretos
     lineClipWindow,
     setLineClipWindow,
     onApplyClip,
     polygonClipWindow,
     setPolygonClipWindow,
     onApplyPolygonClip,
+    vertices3D,
+    onVertexChange,
+    onAddVertex,
+    onRemoveVertex,
+    projectionType,
+    projectionParams,
+    onProjectionTypeChange,
+    onProjectionParamsChange,
+    onProject,
     ...tableViewProps
   } = props;
 
@@ -108,6 +118,23 @@ function SidebarPanel(props) {
                 setClipWindow={setPolygonClipWindow}
                 onApplyPolygonClip={onApplyPolygonClip}
               />
+            )}
+            {selectedAlgorithm === 'projections' && (
+              <>
+                <ProjectionsPanel
+                  type={projectionType}
+                  params={projectionParams}
+                  onTypeChange={onProjectionTypeChange}
+                  onParamsChange={onProjectionParamsChange}
+                  onProject={onProject}
+                />
+                <TableView3D 
+                  vertices={vertices3D}
+                  onVertexChange={onVertexChange}
+                  onAddVertex={onAddVertex}
+                  onRemoveVertex={onRemoveVertex}
+                />
+              </>
             )}
           </div>
         </>
