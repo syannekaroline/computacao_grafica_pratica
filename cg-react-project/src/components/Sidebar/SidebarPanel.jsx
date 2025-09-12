@@ -13,6 +13,7 @@ import SutherlandHodgmanPanel from '../ParameterPanels/SutherlandHodgman/Sutherl
 import ProjectionsPanel from '../ParameterPanels/Projections/ProjectionsPanel';
 import TableView3D from '../TableView/TableView3D';
 import EllipsePanel from '../ParameterPanels/Ellipse/EllipsePanel';
+import TableViewEdges from '../TableView/TableViewEdge';
 
 function PolylinePanel({ onDrawAlgorithm, onMenuChange }) {
     return (
@@ -54,6 +55,10 @@ function SidebarPanel(props) {
     onProjectionTypeChange,
     onProjectionParamsChange,
     onProject,
+    edges3D,
+    onEdgeChange,
+    onAddEdge,
+    onRemoveEdge,
     ...tableViewProps
   } = props;
 
@@ -134,6 +139,12 @@ function SidebarPanel(props) {
                   onVertexChange={onVertexChange}
                   onAddVertex={onAddVertex}
                   onRemoveVertex={onRemoveVertex}
+                />
+                <TableViewEdges
+                  edges={edges3D}
+                  onEdgeChange={onEdgeChange}
+                  onAddEdge={onAddEdge}
+                  onRemoveEdge={onRemoveEdge}
                 />
               </>
             )}

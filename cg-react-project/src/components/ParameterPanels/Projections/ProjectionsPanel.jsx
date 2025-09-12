@@ -51,19 +51,19 @@ const ProjectionsPanel = ({ type, params, onTypeChange, onParamsChange, onProjec
           {params.numVanishingPoints >= 1 && (
             <div className="param-group">
               <label>Dist. Ponto Fuga Z (dz): {params.dz}</label>
-              <input type="range" min="1" max="50" value={params.dz} onChange={(e) => handleParam('dz', e.target.value)} />
+              <input type="range" min="1" max="500" value={params.dz} onChange={(e) => handleParam('dz', e.target.value)} />
             </div>
           )}
           {params.numVanishingPoints >= 2 && (
             <div className="param-group">
               <label>Dist. Ponto Fuga X (dx): {params.dx}</label>
-              <input type="range" min="1" max="50" value={params.dx} onChange={(e) => handleParam('dx', e.target.value)} />
+              <input type="range" min="1" max="500" value={params.dx} onChange={(e) => handleParam('dx', e.target.value)} />
             </div>
           )}
           {params.numVanishingPoints === 3 && (
             <div className="param-group">
               <label>Dist. Ponto Fuga Y (dy): {params.dy}</label>
-              <input type="range" min="1" max="50" value={params.dy} onChange={(e) => handleParam('dy', e.target.value)} />
+              <input type="range" min="1" max="500" value={params.dy} onChange={(e) => handleParam('dy', e.target.value)} />
             </div>
           )}
         </>

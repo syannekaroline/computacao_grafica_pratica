@@ -29,7 +29,13 @@ function App() {
   const [vertices3D, setVertices3D] = useState(CUBE_VERTICES);
   const [edges3D, setEdges3D] = useState(CUBE_EDGES); // Por enquanto, fixo para um cubo
   const [projectionType, setProjectionType] = useState('cavalier');
-  const [projectionParams, setProjectionParams] = useState({ angle: 45, d: 20 });
+  const [projectionParams, setProjectionParams] = useState({ 
+    angle: 45, 
+    numVanishingPoints: 1,
+    dx: 100,
+    dy: 100,
+    dz: 100,
+  });
 
   const [activeSidebarMenu, setActiveSidebarMenu] = useState('ALGORITHMS');
   const [currentMode, setCurrentMode] = useState('SELECT');
@@ -342,6 +348,21 @@ function App() {
     setProjectionParams(prev => ({...prev, [param]: parseFloat(value)}));
   };
 
+  const handleEdgeChange = (index, pointIndex, value) => {
+    const updatedEdges = edges3D.map((edge, i) => {
+      if (i === index) {
+        const newEdge = [...edge];
+        newEdge[pointIndex] = parseInt(value, 10) || 0;
+        return newEdge;
+      }
+      return edge;
+    });
+    setEdges3D(updatedEdges);
+  };
+  
+  const handleAddEdge = () => setEdges3D([...edges3D, [0, 0]]);
+  const handleRemoveEdge = (index) => setEdges3D(edges3D.filter((_, i) => i !== index));
+
   return (
     <div className="app-container">
       <TopMenu currentMode={currentMode} onModeChange={setCurrentMode} onReset={handleReset} />
@@ -372,6 +393,10 @@ function App() {
             onProjectionTypeChange={setProjectionType}
             onProjectionParamsChange={handleProjectionParamsChange}
             onProject={handleProject}
+            edges3D={edges3D}
+            onEdgeChange={handleEdgeChange}
+            onAddEdge={handleAddEdge}
+            onRemoveEdge={handleRemoveEdge}
           />
         </div>
         <div className="resizer" onMouseDown={handleMouseDown} />
