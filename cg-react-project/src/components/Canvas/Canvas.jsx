@@ -59,7 +59,15 @@ function Canvas({
         return obj;
       }
       let allPoints = [];
-      if (obj.type === 'bresenham') {
+      if (obj.type === 'projection') {
+        obj.edges.forEach(edge => {
+          const p1 = obj.projectedPoints[edge[0]];
+          const p2 = obj.projectedPoints[edge[1]];
+          if (p1 && p2) {
+            allPoints.push(...calculateBresenhamLine(p1, p2));
+          }
+        });
+      } else if (obj.type === 'bresenham') {
           allPoints = calculateBresenhamLine(obj.params.p1, obj.params.p2);
       } else if (obj.type === 'circle') {
         allPoints = calculateCirclePoints(obj.params.center, obj.params.radius);
